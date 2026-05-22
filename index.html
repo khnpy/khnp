@@ -286,6 +286,7 @@ function App() {
   const [currentQ, setCurrentQ] = useState(0);
   const [scores, setScores] = useState({});
   const [selected, setSelected] = useState(null);
+  const [history, setHistory] = useState([]);
   const [animating, setAnimating] = useState(false);
   const [result, setResult] = useState(null);
   const [detailName, setDetailName] = useState(null);
@@ -347,6 +348,7 @@ function App() {
   const handleSelect = (i) => {
     if(animating || selected!==null) return;
     setSelected(i);
+    setHistory(prev=>[...prev,i]);
     const ns={...scores};
     questions[currentQ].options[i].types.forEach(t=>{ ns[t]=(ns[t]||0)+1; });
     setAnimating(true);
@@ -505,11 +507,29 @@ function App() {
     }).catch(err => console.log("구글 시트 저장 실패:", err));
   };
 
+
+  const handlePrev = () => {
+    if (animating) return;
+    if (currentQ === 0) {
+      setStep("profile");
+      setProfileErr("");
+    } else {
+      const lastSelection = history[history.length - 1];
+      const ns = { ...scores };
+      questions[currentQ - 1].options[lastSelection].types.forEach(t => {
+        if (ns[t]) ns[t] -= 1;
+      });
+      setScores(ns);
+      setHistory(prev => prev.slice(0, -1));
+      setCurrentQ(currentQ - 1);
+    }
+  };
+
   const openDetail=(name,from)=>{ setDetailName(name); setDetailFrom(from); setStep("detail"); };
   const closeDetail=()=>setStep(detailFrom==="browse"?"browse":"result");
 
   const handleRetry=()=>{
-    setStep("profile"); setCurrentQ(0); setScores({}); setSelected(null); setResult(null);
+    setStep("profile"); setCurrentQ(0); setScores({}); setSelected(null); setResult(null); setHistory([]);
     setProfile({dept:"",nickname:""});
   };
 
@@ -626,8 +646,11 @@ function App() {
         </div>
 
         <div style={{marginBottom:20}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}>
-            <span style={S.tiny}>Q{currentQ+1} / {questions.length}</span>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <button onClick={handlePrev} style={{background:"none",border:"1px solid rgba(255,255,255,0.15)",borderRadius:6,color:"rgba(255,255,255,0.6)",padding:"2px 8px",fontSize:11,fontFamily:"'Pretendard',-apple-system,sans-serif",cursor:"pointer"}}>← 이전</button>
+              <span style={S.tiny}>Q{currentQ+1} / {questions.length}</span>
+            </div>
             <span style={{...S.tiny,color:"rgba(59,130,246,1)"}}>{Math.round(progress)}%</span>
           </div>
           <div style={{height:4,background:"rgba(255,255,255,0.07)",borderRadius:99}}>
