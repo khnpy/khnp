@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>나도 소통빌런일까? | 소통 유형 자가진단</title><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>body{margin:0;background:#0B131E;font-family:"Pretendard",-apple-system,sans-serif;}*{-webkit-tap-highlight-color:transparent;}</style></head><body><div id="root"></div><script>const window_storage={_key:function(k,s){return(s?"sh_":"lc_")+k;},get:async function(k,s){const v=localStorage.getItem(this._key(k,s));if(v===null)throw new Error("nf");return{key:k,value:v,shared:!!s};},set:async function(k,v,s){localStorage.setItem(this._key(k,s),v);return{key:k,value:v,shared:!!s};},delete:async function(k,s){localStorage.removeItem(this._key(k,s));return{key:k,deleted:true,shared:!!s};}};window.storage=window_storage;</script><script type="text/babel" data-presets="react">const{useState,useEffect,useRef}=React;
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>나도 소통빌런일까? | 소통 유형 자가진단</title><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>body{margin:0;background:#0B131E;font-family:Pretendard,-apple-system,sans-serif;}*{-webkit-tap-highlight-color:transparent;}</style></head><body><div id="root"></div><script>const window_storage={_key:function(k,s){return(s?"sh_":"lc_")+k;},get:async function(k,s){const v=localStorage.getItem(this._key(k,s));if(v===null)throw new Error("nf");return{key:k,value:v,shared:!!s};},set:async function(k,v,s){localStorage.setItem(this._key(k,s),v);return{key:k,value:v,shared:!!s};},delete:async function(k,s){localStorage.removeItem(this._key(k,s));return{key:k,deleted:true,shared:!!s};}};window.storage=window_storage;</script><script type="text/babel" data-presets="react">const{useState,useEffect,useRef}=React;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ⚙️  관리자 설정 — 비밀번호 여기서 변경
@@ -355,6 +355,7 @@ function App() {
       if(currentQ+1>=questions.length){
         const r=getResult(ns); setResult(r); setScores(ns); setStep("result");
         saveRecord(profile.dept, profile.nickname, r.top);
+        sendToGoogleSheet(profile.dept, profile.nickname, r.top, V[r.top].tag);
       } else { setScores(ns); setCurrentQ(currentQ+1); }
     }, 550);
   };
@@ -486,6 +487,21 @@ function App() {
     const rndNoun = nouns[Math.floor(Math.random()*nouns.length)];
     setProfile(p=>({...p, nickname:`${rndAdj} ${rndNoun}`}));
     setProfileErr("");
+  };
+
+
+  const sendToGoogleSheet = (dept, nickname, villain, tag) => {
+    const url = "https://script.google.com/macros/s/AKfycbyhQ9MmYY4c9TzeU5tR3dbz6Zw6pXMXGD-HiA_ikBLfmb0JONHy7HypK4lqf48bW0wn/exec";
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        dept: dept || "미입력",
+        nickname: nickname || "익명",
+        villain: villain,
+        tag: tag
+      })
+    }).catch(err => console.log("구글 시트 저장 실패:", err));
   };
 
   const openDetail=(name,from)=>{ setDetailName(name); setDetailFrom(from); setStep("detail"); };
