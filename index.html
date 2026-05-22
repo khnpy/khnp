@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>나도 소통빌런일까? | 소통 유형 자가진단</title><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>body{margin:0;background:#0d0b18;}*{-webkit-tap-highlight-color:transparent;}</style></head><body><div id="root"></div><script>const window_storage={_key:function(k,s){return(s?"sh_":"lc_")+k;},get:async function(k,s){const v=localStorage.getItem(this._key(k,s));if(v===null)throw new Error("nf");return{key:k,value:v,shared:!!s};},set:async function(k,v,s){localStorage.setItem(this._key(k,s),v);return{key:k,value:v,shared:!!s};},delete:async function(k,s){localStorage.removeItem(this._key(k,s));return{key:k,deleted:true,shared:!!s};}};window.storage=window_storage;</script><script type="text/babel" data-presets="react">const{useState,useEffect,useRef}=React;
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>나도 소통빌런일까? | 소통 유형 자가진단</title><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>body{margin:0;background:#0B131E;font-family:"Pretendard",-apple-system,sans-serif;}*{-webkit-tap-highlight-color:transparent;}</style></head><body><div id="root"></div><script>const window_storage={_key:function(k,s){return(s?"sh_":"lc_")+k;},get:async function(k,s){const v=localStorage.getItem(this._key(k,s));if(v===null)throw new Error("nf");return{key:k,value:v,shared:!!s};},set:async function(k,v,s){localStorage.setItem(this._key(k,s),v);return{key:k,value:v,shared:!!s};},delete:async function(k,s){localStorage.removeItem(this._key(k,s));return{key:k,deleted:true,shared:!!s};}};window.storage=window_storage;</script><script type="text/babel" data-presets="react">const{useState,useEffect,useRef}=React;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ⚙️  관리자 설정 — 비밀번호 여기서 변경
@@ -371,13 +371,13 @@ function App() {
       const ctx = canvas.getContext("2d");
 
       // 배경
-      ctx.fillStyle = "#0d0b18";
+      ctx.fillStyle = "#0B131E";
       ctx.fillRect(0, 0, W, H);
 
       // 보라 그라데이션 상단
       const grad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H*0.7);
-      grad.addColorStop(0, "rgba(88,28,135,0.55)");
-      grad.addColorStop(1, "rgba(0,0,0,0)");
+      grad.addColorStop(0, "rgba(16,185,129,0.4)");
+      grad.addColorStop(1, "rgba(59,130,246,0)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
@@ -478,6 +478,16 @@ function App() {
     alert("테스트 링크가 복사되었습니다! 친구들에게 공유해보세요. 🌱");
   };
 
+
+  const generateRandomNickname = () => {
+    const adjs = ["열일하는","다정한","든든한","센스있는","친절한","유쾌한","따뜻한","꼼꼼한","소통하는","빛나는"];
+    const nouns = ["양양인","한수원인","에이스","해결사","마스터","히어로","팀원","프로","천사","요정"];
+    const rndAdj = adjs[Math.floor(Math.random()*adjs.length)];
+    const rndNoun = nouns[Math.floor(Math.random()*nouns.length)];
+    setProfile(p=>({...p, nickname:`${rndAdj} ${rndNoun}`}));
+    setProfileErr("");
+  };
+
   const openDetail=(name,from)=>{ setDetailName(name); setDetailFrom(from); setStep("detail"); };
   const closeDetail=()=>setStep(detailFrom==="browse"?"browse":"result");
 
@@ -507,6 +517,24 @@ function App() {
           <p style={S.sub}>16가지 소통빌런 유형 중<br/>내 안에 숨어있는 빌런을 찾아보세요</p>
         </CB>
 
+        <div style={{background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.3)",borderRadius:14,padding:"16px",marginBottom:20,textAlign:"left"}}>
+          <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:15,color:"#10B981",marginBottom:8}}>🌱 양양양수 소통 캠페인</div>
+          <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.85)",lineHeight:1.6,marginBottom:12}}>
+            이 테스트는 서로를 평가하거나 지적하기 위한 것이 아닙니다.<br/>
+            나의 소통 습관을 가볍게 돌아보고, 세대와 직급을 넘어 <b>서로를 더 깊이 이해하고 부드럽게 일하기 위해</b> 준비했습니다. 편하게 즐겨주세요!
+          </p>
+          <div style={{display:"flex",flexDirection:"column",gap:6,background:"rgba(0,0,0,0.15)",padding:"10px 12px",borderRadius:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:14}}>✨</span>
+              <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.7)"}}>나의 진짜 업무 소통 스타일 객관적으로 알아보기</span>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:14}}>🤝</span>
+              <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.7)"}}>동료와 결과를 공유하며 소통의 오해 줄이기</span>
+            </div>
+          </div>
+        </div>
+
         <div style={S.formBox}>
           <div style={{...S.sl,marginBottom:12}}>📝 참여자 정보</div>
 
@@ -515,7 +543,7 @@ function App() {
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
               <div style={S.il}>부서명 <span style={{color:"rgba(255,255,255,0.3)",fontSize:11}}>(선택)</span></div>
               <button onClick={()=>{ setDeptMode(m=>m==="select"?"custom":"select"); setProfile(p=>({...p,dept:""})); }}
-                style={{background:"none",border:"none",cursor:"pointer",fontFamily:"'Gowun Dodum',sans-serif",fontSize:11,color:"rgba(167,139,250,0.8)",padding:0,textDecoration:"underline"}}>
+                style={{background:"none",border:"none",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11,color:"rgba(16,185,129,0.9)",padding:0,textDecoration:"underline"}}>
                 {deptMode==="select"?"✏️ 직접 입력":"📋 목록에서 선택"}
               </button>
             </div>
@@ -536,12 +564,18 @@ function App() {
           {/* 닉네임 */}
           <div>
             <div style={S.il}>닉네임 <span style={{color:"#f472b6",fontSize:11}}>*필수</span></div>
-            <input style={{...S.inp, borderColor:profileErr?"rgba(244,114,182,0.6)":"rgba(255,255,255,0.12)"}}
-              placeholder="예: 소통왕, 읽씹러, 회의의신…"
-              value={profile.nickname} maxLength={12}
-              onChange={e=>{setProfile(p=>({...p,nickname:e.target.value}));setProfileErr("");}}
-              onKeyDown={e=>e.key==="Enter"&&handleProfileSubmit()} />
-            {profileErr && <div style={{fontSize:12,color:"#f472b6",marginTop:5,fontFamily:"'Gowun Dodum',sans-serif"}}>⚠️ {profileErr}</div>}
+            <div style={{display:"flex",gap:8}}>
+              <input style={{...S.inp, flex:1, borderColor:profileErr?"rgba(244,114,182,0.6)":"rgba(255,255,255,0.12)"}}
+                placeholder="직접 입력하거나 랜덤 버튼 클릭!"
+                value={profile.nickname} maxLength={12}
+                onChange={e=>{setProfile(p=>({...p,nickname:e.target.value}));setProfileErr("");}}
+                onKeyDown={e=>e.key==="Enter"&&handleProfileSubmit()} />
+              <button onClick={generateRandomNickname}
+                style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.2)",borderRadius:10,padding:"0 14px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.9)",transition:"all 0.2s",whiteSpace:"nowrap"}}>
+                🎲 랜덤
+              </button>
+            </div>
+            {profileErr && <div style={{fontSize:12,color:"#f472b6",marginTop:5,fontFamily:"'Pretendard',-apple-system,sans-serif"}}>⚠️ {profileErr}</div>}
           </div>
         </div>
 
@@ -568,7 +602,7 @@ function App() {
       <Card cls="anim">
         <div style={S.userBadge}>
           <span style={{fontSize:15}}>🦹</span>
-          <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.78)"}}>
+          <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.78)"}}>
             {profile.dept&&<span style={{color:"rgba(255,255,255,0.4)",marginRight:4}}>{profile.dept} ·</span>}
             <b style={{color:"white"}}>{profile.nickname||"익명"}</b>
           </span>
@@ -577,7 +611,7 @@ function App() {
         <div style={{marginBottom:20}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}>
             <span style={S.tiny}>Q{currentQ+1} / {questions.length}</span>
-            <span style={{...S.tiny,color:"rgba(167,139,250,0.9)"}}>{Math.round(progress)}%</span>
+            <span style={{...S.tiny,color:"rgba(59,130,246,1)"}}>{Math.round(progress)}%</span>
           </div>
           <div style={{height:4,background:"rgba(255,255,255,0.07)",borderRadius:99}}>
             <div className="pfill" style={{width:`${progress}%`}}/>
@@ -611,7 +645,7 @@ function App() {
           <div ref={resultRef}>
             <div style={S.userBadge}>
               <span>👤</span>
-              <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.8)"}}>
+              <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.8)"}}>
                 {profile.dept&&<span style={{color:"rgba(255,255,255,0.42)"}}>{profile.dept} · </span>}
                 <b style={{color:"white"}}>{profile.nickname||"익명"}</b>님의 결과
               </span>
@@ -621,8 +655,8 @@ function App() {
             <CB mb={16}>
               <div style={{background:`linear-gradient(135deg,${v.color}33,${v.color}55)`,border:`2px solid ${v.color}88`,borderRadius:20,padding:"18px 30px",display:"inline-block"}}>
                 <div className="eb" style={{fontSize:46,marginBottom:6}}>{v.emoji}</div>
-                <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:24,color:"white"}}>{result.top}</div>
-                <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:`${v.color}cc`,marginTop:4}}>{v.tagline}</div>
+                <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:24,color:"white"}}>{result.top}</div>
+                <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:`${v.color}cc`,marginTop:4}}>{v.tagline}</div>
                 <span style={{...S.badge,background:TAG_COLOR[v.tag]?.bg,color:TAG_COLOR[v.tag]?.label||v.color,border:`1px solid ${TAG_COLOR[v.tag]?.border||v.color}`,marginTop:8,fontWeight:600}}>{v.tag}</span>
               </div>
             </CB>
@@ -632,11 +666,11 @@ function App() {
             {/* 저장/공유 버튼 — 설명 바로 아래 */}
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               <button onClick={handleSaveImage} disabled={saving}
-                style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,padding:"12px",cursor:"pointer",fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.85)",transition:"all .2s"}}>
+                style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,padding:"12px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.85)",transition:"all .2s"}}>
                 {saving?"저장 중…":"📸 이미지 저장"}
               </button>
               <button onClick={handleCopyLink}
-                style={{flex:1,background:"linear-gradient(135deg,rgba(167,139,250,0.2) 0%,rgba(244,114,182,0.2) 100%)",border:"1px solid rgba(167,139,250,0.4)",borderRadius:12,padding:"12px",cursor:"pointer",fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"white",transition:"all .2s"}}>
+                style={{flex:1,background:"linear-gradient(135deg,rgba(16,185,129,0.2) 0%,rgba(59,130,246,0.2) 100%)",border:"1px solid rgba(59,130,246,0.4)",borderRadius:12,padding:"12px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"white",transition:"all .2s"}}>
                 🔗 링크 복사
               </button>
             </div>
@@ -649,15 +683,15 @@ function App() {
                   <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(46,213,115,0.08)",border:"1px solid rgba(46,213,115,0.25)",borderRadius:10,padding:"10px 12px"}}>
                     <span style={{fontSize:22,flexShrink:0}}>💚</span>
                     <div>
-                      <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"#2ed573",marginBottom:3}}>{V[compat.best]?.emoji} {compat.best} — 잘 맞아요</div>
-                      <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{compat.bestDesc}</p>
+                      <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"#2ed573",marginBottom:3}}>{V[compat.best]?.emoji} {compat.best} — 잘 맞아요</div>
+                      <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{compat.bestDesc}</p>
                     </div>
                   </div>
                   <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(255,71,87,0.08)",border:"1px solid rgba(255,71,87,0.25)",borderRadius:10,padding:"10px 12px"}}>
                     <span style={{fontSize:22,flexShrink:0}}>🔴</span>
                     <div>
-                      <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"#ff4757",marginBottom:3}}>{V[compat.worst]?.emoji} {compat.worst} — 조심해요</div>
-                      <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{compat.worstDesc}</p>
+                      <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"#ff4757",marginBottom:3}}>{V[compat.worst]?.emoji} {compat.worst} — 조심해요</div>
+                      <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{compat.worstDesc}</p>
                     </div>
                   </div>
                 </div>
@@ -671,9 +705,9 @@ function App() {
                   <div key={i} style={{background:`linear-gradient(135deg,${v.color}18,transparent)`,border:`1px solid ${v.color}30`,borderRadius:12,padding:"12px 14px"}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                       <span style={{fontSize:15}}>{t.icon}</span>
-                      <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"white"}}>{t.title}</span>
+                      <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"white"}}>{t.title}</span>
                     </div>
-                    <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.72)",lineHeight:1.7,whiteSpace:"pre-line"}}>{t.body}</p>
+                    <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.72)",lineHeight:1.7,whiteSpace:"pre-line"}}>{t.body}</p>
                   </div>
                 ))}
               </div>
@@ -684,8 +718,8 @@ function App() {
                 <div style={{fontSize:24}}>{sv.emoji}</div>
                 <div style={{flex:1}}>
                   <div style={S.tiny}>숨어있는 두 번째 유형</div>
-                  <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:14,color:"white",marginTop:2}}>{result.second}</div>
-                  <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.4)",marginTop:2}}>{sv.tagline} · 자세히 보기 →</div>
+                  <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:14,color:"white",marginTop:2}}>{result.second}</div>
+                  <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.4)",marginTop:2}}>{sv.tagline} · 자세히 보기 →</div>
                 </div>
                 <span style={{color:"rgba(255,255,255,0.25)",fontSize:18}}>›</span>
               </button>
@@ -697,11 +731,11 @@ function App() {
                 {others.map(name=>(
                   <button key={name} className="chip" onClick={()=>openDetail(name,"result")} style={{borderColor:`${V[name].color}55`}}>
                     <span>{V[name].emoji}</span>
-                    <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.75)"}}>{name}</span>
+                    <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.75)"}}>{name}</span>
                   </button>
                 ))}
                 <button className="chip" onClick={()=>setStep("browse")} style={{borderColor:"rgba(255,255,255,0.18)"}}>
-                  <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.45)"}}>전체 16종 →</span>
+                  <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.45)"}}>전체 16종 →</span>
                 </button>
               </div>
             </div>
@@ -725,7 +759,7 @@ function App() {
         <Card cls="anim" scroll>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
             <button className="back" onClick={()=>setStep("result")}>← 결과로</button>
-            <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:17,color:"white"}}>소통빌런 도감</span>
+            <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:17,color:"white"}}>소통빌런 도감</span>
           </div>
           <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
             {tags.map(t=>(
@@ -737,8 +771,8 @@ function App() {
               <button key={name} className="dex" onClick={()=>openDetail(name,"browse")}
                 style={{background:TAG_COLOR[dv.tag]?.bg||`rgba(0,0,0,0.25)`,border:`1.5px solid ${TAG_COLOR[dv.tag]?.border||dv.color+'44'}`}}>
                 <div style={{fontSize:28,marginBottom:4}}>{dv.emoji}</div>
-                <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:12.5,color:"white",lineHeight:1.3}}>{name}</div>
-                <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:10.5,color:"rgba(255,255,255,0.4)",marginTop:3,lineHeight:1.4}}>{dv.tagline}</div>
+                <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12.5,color:"white",lineHeight:1.3}}>{name}</div>
+                <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:10.5,color:"rgba(255,255,255,0.4)",marginTop:3,lineHeight:1.4}}>{dv.tagline}</div>
                 <span style={{...S.badge,background:TAG_COLOR[dv.tag]?.bg,color:TAG_COLOR[dv.tag]?.label||dv.color,border:`1px solid ${TAG_COLOR[dv.tag]?.border||dv.color}`,marginTop:7,fontSize:10,fontWeight:600}}>{dv.tag}</span>
               </button>
             );})}
@@ -757,13 +791,13 @@ function App() {
         <Card cls="anim" scroll>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
             <button className="back" onClick={closeDetail}>← 뒤로</button>
-            <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.45)"}}>빌런 상세 보기</span>
+            <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.45)"}}>빌런 상세 보기</span>
           </div>
           <CB mb={16}>
             <div style={{background:`linear-gradient(135deg,${dv.color}33,${dv.color}55)`,border:`2px solid ${dv.color}77`,borderRadius:18,padding:"16px 28px",display:"inline-block"}}>
               <div className="eb" style={{fontSize:44,marginBottom:6}}>{dv.emoji}</div>
-              <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:22,color:"white"}}>{detailName}</div>
-              <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:`${dv.color}bb`,marginTop:3}}>{dv.tagline}</div>
+              <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:22,color:"white"}}>{detailName}</div>
+              <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:`${dv.color}bb`,marginTop:3}}>{dv.tagline}</div>
               <span style={{...S.badge,background:TAG_COLOR[dv.tag]?.bg,color:TAG_COLOR[dv.tag]?.label||dv.color,border:`1px solid ${TAG_COLOR[dv.tag]?.border||dv.color}`,marginTop:7,fontWeight:600}}>{dv.tag}</span>
             </div>
           </CB>
@@ -777,15 +811,15 @@ function App() {
                 <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(46,213,115,0.08)",border:"1px solid rgba(46,213,115,0.25)",borderRadius:10,padding:"10px 12px"}}>
                   <span style={{fontSize:22,flexShrink:0}}>💚</span>
                   <div>
-                    <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"#2ed573",marginBottom:3}}>{V[COMPAT[detailName].best]?.emoji} {COMPAT[detailName].best} — 잘 맞아요</div>
-                    <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{COMPAT[detailName].bestDesc}</p>
+                    <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"#2ed573",marginBottom:3}}>{V[COMPAT[detailName].best]?.emoji} {COMPAT[detailName].best} — 잘 맞아요</div>
+                    <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{COMPAT[detailName].bestDesc}</p>
                   </div>
                 </div>
                 <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(255,71,87,0.08)",border:"1px solid rgba(255,71,87,0.25)",borderRadius:10,padding:"10px 12px"}}>
                   <span style={{fontSize:22,flexShrink:0}}>🔴</span>
                   <div>
-                    <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"#ff4757",marginBottom:3}}>{V[COMPAT[detailName].worst]?.emoji} {COMPAT[detailName].worst} — 조심해요</div>
-                    <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{COMPAT[detailName].worstDesc}</p>
+                    <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"#ff4757",marginBottom:3}}>{V[COMPAT[detailName].worst]?.emoji} {COMPAT[detailName].worst} — 조심해요</div>
+                    <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{COMPAT[detailName].worstDesc}</p>
                   </div>
                 </div>
               </div>
@@ -799,9 +833,9 @@ function App() {
                 <div key={i} style={{background:`linear-gradient(135deg,${dv.color}18,transparent)`,border:`1px solid ${dv.color}30`,borderRadius:12,padding:"12px 14px"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                     <span style={{fontSize:15}}>{t.icon}</span>
-                    <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"white"}}>{t.title}</span>
+                    <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"white"}}>{t.title}</span>
                   </div>
-                  <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.72)",lineHeight:1.7,whiteSpace:"pre-line"}}>{t.body}</p>
+                  <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.72)",lineHeight:1.7,whiteSpace:"pre-line"}}>{t.body}</p>
                 </div>
               ))}
             </div>
@@ -813,7 +847,7 @@ function App() {
                 {sameTag.map(name=>(
                   <button key={name} className="chip" onClick={()=>setDetailName(name)} style={{background:TAG_COLOR[dv.tag]?.bg,borderColor:TAG_COLOR[dv.tag]?.border}}>
                     <span>{V[name].emoji}</span>
-                    <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.75)"}}>{name}</span>
+                    <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.75)"}}>{name}</span>
                   </button>
                 ))}
               </div>
@@ -831,8 +865,8 @@ function App() {
       <Card cls="anim">
         <CB mb={16}>
           <div style={{fontSize:40,marginBottom:10}}>🔑</div>
-          <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:20,color:"white",marginBottom:6}}>관리자 모드</div>
-          <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.45)"}}>비밀번호를 입력하세요</p>
+          <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:20,color:"white",marginBottom:6}}>관리자 모드</div>
+          <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.45)"}}>비밀번호를 입력하세요</p>
         </CB>
         <div style={{marginBottom:16}}>
           <input type="password"
@@ -842,7 +876,7 @@ function App() {
             value={pwInput}
             onChange={e=>{setPwInput(e.target.value);setPwErr("");}}
             onKeyDown={e=>e.key==="Enter"&&handleAdminLogin()} />
-          {pwErr&&<div style={{textAlign:"center",fontSize:12,color:"#f472b6",marginTop:6,fontFamily:"'Gowun Dodum',sans-serif"}}>⚠️ {pwErr}</div>}
+          {pwErr&&<div style={{textAlign:"center",fontSize:12,color:"#f472b6",marginTop:6,fontFamily:"'Pretendard',-apple-system,sans-serif"}}>⚠️ {pwErr}</div>}
         </div>
         <CB style={{gap:10,display:"flex",flexDirection:"column",alignItems:"center"}}>
           <button className="btn-p" onClick={handleAdminLogin}>입장하기</button>
@@ -872,8 +906,8 @@ function App() {
           {/* 헤더 */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:18,color:"white"}}>🔑 관리자 패널</span>
-              <span style={{...S.badge,background:"rgba(167,139,250,0.2)",color:"rgba(167,139,250,0.9)",border:"1px solid rgba(167,139,250,0.3)"}}>총 {allRecords.length}건</span>
+              <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:18,color:"white"}}>🔑 관리자 패널</span>
+              <span style={{...S.badge,background:"rgba(167,139,250,0.2)",color:"rgba(59,130,246,1)",border:"1px solid rgba(167,139,250,0.3)"}}>총 {allRecords.length}건</span>
             </div>
             <button className="back" onClick={()=>setStep("profile")}>나가기</button>
           </div>
@@ -884,16 +918,16 @@ function App() {
             <div style={{display:"flex",flexDirection:"column",gap:7}}>
               {topVillains.map(([name,cnt],i)=>(
                 <div key={name} style={{display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)",width:18}}>{i+1}</span>
+                  <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)",width:18}}>{i+1}</span>
                   <span style={{fontSize:18}}>{V[name]?.emoji}</span>
-                  <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"white",flex:1}}>{name}</span>
+                  <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"white",flex:1}}>{name}</span>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
                     <div style={{height:6,width:`${Math.round((cnt/allRecords.length)*80)+8}px`,background:`${V[name]?.color||"#888"}88`,borderRadius:99}}/>
-                    <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:`${V[name]?.color||"#888"}dd`}}>{cnt}명</span>
+                    <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:`${V[name]?.color||"#888"}dd`}}>{cnt}명</span>
                   </div>
                 </div>
               ))}
-              {topVillains.length===0&&<p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)"}}>아직 참여 기록이 없어요</p>}
+              {topVillains.length===0&&<p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)"}}>아직 참여 기록이 없어요</p>}
             </div>
 
             {/* 부서별 */}
@@ -902,7 +936,7 @@ function App() {
                 <div style={{...S.sl,marginBottom:8}}>🏢 부서별 참여</div>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                   {Object.entries(countByDept).map(([d,c])=>(
-                    <div key={d} style={{background:"rgba(255,255,255,0.06)",borderRadius:99,padding:"4px 12px",fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:"rgba(255,255,255,0.7)"}}>
+                    <div key={d} style={{background:"rgba(255,255,255,0.06)",borderRadius:99,padding:"4px 12px",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.7)"}}>
                       {d} <b style={{color:"white"}}>{c}</b>
                     </div>
                   ))}
@@ -921,22 +955,22 @@ function App() {
           {/* 기록 리스트 */}
           <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"14px",maxHeight:"45vh",overflowY:"auto",marginBottom:10}}>
             {filtered.length===0
-              ? <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)",textAlign:"center",padding:"20px 0"}}>기록이 없어요</p>
+              ? <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)",textAlign:"center",padding:"20px 0"}}>기록이 없어요</p>
               : <div style={{display:"flex",flexDirection:"column",gap:7}}>
                   {filtered.map((r,i)=>(
                     <div key={i} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"9px 12px",display:"flex",alignItems:"center",gap:10}}>
                       <span style={{fontSize:20}}>{r.emoji}</span>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
-                          <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"white"}}>{r.nickname}</span>
-                          {r.dept&&<span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11,color:"rgba(255,255,255,0.38)"}}>({r.dept})</span>}
+                          <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"white"}}>{r.nickname}</span>
+                          {r.dept&&<span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11,color:"rgba(255,255,255,0.38)"}}>({r.dept})</span>}
                         </div>
-                        <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.5)",marginTop:2}}>
+                        <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.5)",marginTop:2}}>
                           {r.villain}
                           <span style={{...S.badge,background:`${V[r.villain]?.color||"#888"}22`,color:`${V[r.villain]?.color||"#888"}bb`,border:"none",marginLeft:6,padding:"1px 7px",fontSize:10}}>{r.tag}</span>
                         </div>
                       </div>
-                      <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:10.5,color:"rgba(255,255,255,0.28)",textAlign:"right",flexShrink:0}}>
+                      <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:10.5,color:"rgba(255,255,255,0.28)",textAlign:"right",flexShrink:0}}>
                         {r.date}<br/>{r.time}
                       </div>
                     </div>
@@ -949,7 +983,7 @@ function App() {
           <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
             <button className="btn-g" onClick={loadAllRecords}>새로고침 🔄</button>
             <button onClick={clearRecords}
-              style={{background:"rgba(231,76,60,0.12)",border:"1px solid rgba(231,76,60,0.3)",borderRadius:11,padding:"10px 16px",color:"rgba(231,76,60,0.8)",fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,cursor:"pointer"}}>
+              style={{background:"rgba(231,76,60,0.12)",border:"1px solid rgba(231,76,60,0.3)",borderRadius:11,padding:"10px 16px",color:"rgba(231,76,60,0.8)",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,cursor:"pointer"}}>
               전체 삭제 🗑️
             </button>
           </div>
@@ -979,38 +1013,38 @@ function Card({children,cls,scroll}){
 function CB({children,mb,style}){ return <div style={{textAlign:"center",marginBottom:mb||0,...style}}>{children}</div>; }
 function Lbl({children}){ return <span style={S.lbl}>{children}</span>; }
 function StatRow({children}){ return <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"11px 14px",marginBottom:22,display:"flex",gap:14,justifyContent:"center"}}>{children}</div>; }
-function St({n,l}){ return <div style={{textAlign:"center"}}><div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:21,color:"white"}}>{n}</div><div style={{fontSize:11,color:"rgba(255,255,255,0.38)",fontFamily:"'Gowun Dodum',sans-serif"}}>{l}</div></div>; }
+function St({n,l}){ return <div style={{textAlign:"center"}}><div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:21,color:"white"}}>{n}</div><div style={{fontSize:11,color:"rgba(255,255,255,0.38)",fontFamily:"'Pretendard',-apple-system,sans-serif"}}>{l}</div></div>; }
 function Dv(){ return <div style={{width:1,background:"rgba(255,255,255,0.1)"}}/>; }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 스타일
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const S={
-  root:{minHeight:"100vh",background:"#0d0b18",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px 14px",position:"relative",overflow:"hidden"},
-  bg:{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(88,28,135,0.4) 0%,transparent 70%),radial-gradient(ellipse 60% 50% at 85% 100%,rgba(236,72,153,0.15) 0%,transparent 60%)",pointerEvents:"none",zIndex:0},
+  root:{minHeight:"100vh",background:"#0B131E",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px 14px",position:"relative",overflow:"hidden"},
+  bg:{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(16,185,129,0.25) 0%,transparent 70%),radial-gradient(ellipse 60% 50% at 85% 100%,rgba(59,130,246,0.2) 0%,transparent 60%)",pointerEvents:"none",zIndex:0},
   dots:{position:"fixed",inset:0,backgroundImage:"radial-gradient(rgba(255,255,255,0.025) 1px,transparent 1px)",backgroundSize:"28px 28px",pointerEvents:"none",zIndex:0},
   wrap:{width:"100%",maxWidth:456,position:"relative",zIndex:1},
   card:{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:22,padding:"24px 20px",boxShadow:"0 24px 60px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.06)"},
-  lbl:{fontSize:11.5,letterSpacing:"0.13em",color:"rgba(167,139,250,0.75)",fontFamily:"'Gowun Dodum',sans-serif",textTransform:"uppercase"},
-  h1:{fontFamily:"'Black Han Sans',sans-serif",fontSize:26,color:"white",lineHeight:1.3,letterSpacing:"-0.02em",marginTop:7},
-  sub:{color:"rgba(255,255,255,0.48)",fontSize:13.5,marginTop:8,fontFamily:"'Gowun Dodum',sans-serif",lineHeight:1.75},
-  sl:{fontSize:11,color:"rgba(167,139,250,0.7)",letterSpacing:"0.09em",fontFamily:"'Gowun Dodum',sans-serif",textTransform:"uppercase"},
-  tiny:{fontSize:11.5,color:"rgba(255,255,255,0.35)",fontFamily:"'Gowun Dodum',sans-serif"},
-  micro:{fontSize:11,color:"rgba(255,255,255,0.28)",fontFamily:"'Gowun Dodum',sans-serif",textAlign:"center"},
-  il:{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.6)",marginBottom:6},
-  inp:{width:"100%",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"white",fontFamily:"'Gowun Dodum',sans-serif",fontSize:14,outline:"none",transition:"border-color 0.2s"},
-  sel:{width:"100%",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"white",fontFamily:"'Gowun Dodum',sans-serif",fontSize:14,outline:"none",cursor:"pointer",appearance:"none",WebkitAppearance:"none",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M6 8L0 0h12z'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center",paddingRight:38},
+  lbl:{fontSize:11.5,letterSpacing:"0.13em",color:"rgba(16,185,129,0.9)",fontFamily:"'Pretendard',-apple-system,sans-serif",textTransform:"uppercase"},
+  h1:{fontFamily:"'Pretendard',-apple-system,sans-serif",fontWeight:800,fontSize:26,color:"white",lineHeight:1.3,letterSpacing:"-0.02em",marginTop:7},
+  sub:{color:"rgba(255,255,255,0.48)",fontSize:13.5,marginTop:8,fontFamily:"'Pretendard',-apple-system,sans-serif",lineHeight:1.75},
+  sl:{fontSize:11,color:"rgba(16,185,129,0.85)",letterSpacing:"0.09em",fontFamily:"'Pretendard',-apple-system,sans-serif",textTransform:"uppercase"},
+  tiny:{fontSize:11.5,color:"rgba(255,255,255,0.35)",fontFamily:"'Pretendard',-apple-system,sans-serif"},
+  micro:{fontSize:11,color:"rgba(255,255,255,0.28)",fontFamily:"'Pretendard',-apple-system,sans-serif",textAlign:"center"},
+  il:{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.6)",marginBottom:6},
+  inp:{width:"100%",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"white",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:14,outline:"none",transition:"border-color 0.2s"},
+  sel:{width:"100%",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"white",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:14,outline:"none",cursor:"pointer",appearance:"none",WebkitAppearance:"none",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M6 8L0 0h12z'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center",paddingRight:38},
   formBox:{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:16,padding:"18px 16px",marginBottom:20},
   userBadge:{display:"flex",alignItems:"center",gap:8,marginBottom:14,background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"7px 12px"},
-  situBox:{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"14px 16px",borderLeft:"3px solid rgba(167,139,250,0.5)"},
-  situTxt:{fontFamily:"'Gowun Dodum',sans-serif",fontSize:15,color:"rgba(255,255,255,0.9)",lineHeight:1.68},
+  situBox:{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"14px 16px",borderLeft:"3px solid rgba(16,185,129,0.7)"},
+  situTxt:{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:15,color:"rgba(255,255,255,0.9)",lineHeight:1.68},
   descBox:{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"13px 15px",marginBottom:14},
-  descTxt:{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13.5,color:"rgba(255,255,255,0.8)",lineHeight:1.78},
-  badge:{display:"inline-block",borderRadius:99,padding:"3px 10px",fontSize:11,fontFamily:"'Gowun Dodum',sans-serif"},
+  descTxt:{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13.5,color:"rgba(255,255,255,0.8)",lineHeight:1.78},
+  badge:{display:"inline-block",borderRadius:99,padding:"3px 10px",fontSize:11,fontFamily:"'Pretendard',-apple-system,sans-serif"},
 };
 
 const CSS=`
-@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Black+Han+Sans&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 *{box-sizing:border-box;margin:0;padding:0;}
 
 .anim{animation:fiu .42s cubic-bezier(.4,0,.2,1) both;}
@@ -1018,18 +1052,18 @@ const CSS=`
 .eb{animation:pulse 2.2s ease-in-out infinite;display:inline-block;}
 @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
 
-.pfill{height:100%;border-radius:99px;background:linear-gradient(90deg,#a78bfa,#f472b6);transition:width .5s cubic-bezier(.4,0,.2,1);}
+.pfill{height:100%;border-radius:99px;background:linear-gradient(90deg,#10B981,#3B82F6);transition:width .5s cubic-bezier(.4,0,.2,1);}
 
-.opt{background:rgba(255,255,255,0.055);border:1.5px solid rgba(255,255,255,0.1);border-radius:13px;padding:13px 15px;cursor:pointer;transition:all .2s;font-family:'Gowun Dodum',sans-serif;font-size:14px;color:rgba(255,255,255,0.9);text-align:left;line-height:1.6;display:flex;align-items:flex-start;gap:10px;}
+.opt{background:rgba(255,255,255,0.055);border:1.5px solid rgba(255,255,255,0.1);border-radius:13px;padding:13px 15px;cursor:pointer;transition:all .2s;font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;color:rgba(255,255,255,0.9);text-align:left;line-height:1.6;display:flex;align-items:flex-start;gap:10px;}
 .opt:hover{background:rgba(255,255,255,0.11);border-color:rgba(255,255,255,0.26);transform:translateY(-2px);}
 .opt.sel{background:rgba(255,255,255,0.16);border-color:rgba(255,255,255,0.42);transform:scale(0.98);}
 .opt-l{display:inline-flex;width:23px;height:23px;border-radius:50%;background:rgba(255,255,255,0.12);font-size:11px;font-weight:700;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
 
-.btn-p{background:linear-gradient(135deg,#a78bfa 0%,#f472b6 100%);color:white;border:none;border-radius:13px;padding:14px 36px;font-size:15.5px;font-family:'Black Han Sans',sans-serif;cursor:pointer;letter-spacing:.04em;transition:all .2s;box-shadow:0 4px 20px rgba(167,139,250,0.35);}
+.btn-p{background:linear-gradient(135deg,#10B981 0%,#3B82F6 100%);color:white;border:none;border-radius:13px;padding:14px 36px;font-size:15.5px;font-family:'Pretendard',-apple-system,sans-serif;cursor:pointer;letter-spacing:.04em;transition:all .2s;box-shadow:0 4px 20px rgba(167,139,250,0.35);}
 .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(167,139,250,0.5);}
-.btn-g{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.58);border:1px solid rgba(255,255,255,0.14);border-radius:11px;padding:11px 26px;font-size:13.5px;font-family:'Gowun Dodum',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-g{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.58);border:1px solid rgba(255,255,255,0.14);border-radius:11px;padding:11px 26px;font-size:13.5px;font-family:'Pretendard',-apple-system,sans-serif;cursor:pointer;transition:all .2s;}
 .btn-g:hover{background:rgba(255,255,255,0.11);color:rgba(255,255,255,0.85);}
-.back{background:none;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:rgba(255,255,255,0.55);padding:5px 11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-size:12.5px;transition:all .18s;}
+.back{background:none;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:rgba(255,255,255,0.55);padding:5px 11px;cursor:pointer;font-family:'Pretendard',-apple-system,sans-serif;font-size:12.5px;transition:all .18s;}
 .back:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.85);}
 
 .sv-btn{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .2s;margin-bottom:14px;}
@@ -1041,11 +1075,11 @@ const CSS=`
 .dex{border:1.5px solid;border-radius:14px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;}
 .dex:hover{transform:translateY(-3px);filter:brightness(1.15);}
 
-.tb{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:99px;padding:5px 12px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-size:12px;color:rgba(255,255,255,0.5);transition:all .18s;}
+.tb{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:99px;padding:5px 12px;cursor:pointer;font-family:'Pretendard',-apple-system,sans-serif;font-size:12px;color:rgba(255,255,255,0.5);transition:all .18s;}
 .tb:hover{background:rgba(255,255,255,0.09);}
-.tb.on{background:rgba(167,139,250,0.25);border-color:rgba(167,139,250,0.55);color:rgba(167,139,250,1);}
+.tb.on{background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.55);color:#10B981;}
 
-input:focus,select:focus{border-color:rgba(167,139,250,0.6)!important;outline:none;}
+input:focus,select:focus{border-color:rgba(59,130,246,0.7)!important;outline:none;}
 input::placeholder{color:rgba(255,255,255,0.22);}
 select option{background:#1a1730;color:white;}
 `;
