@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나도 소통빌런일까? | 소통 유형 자가진단</title>
+  <meta name="description" content="16가지 소통빌런 유형 중 내 안에 숨어있는 빌런을 찾아보세요">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>body{margin:0;background:#0d0b18;}</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+const window_storage = {
+  _key: function(key, shared) { return (shared ? 'shared_' : 'local_') + key; },
+  get: async function(key, shared) {
+    try {
+      const val = localStorage.getItem(this._key(key, shared));
+      if(val === null) throw new Error('not found');
+      return { key, value: val, shared: !!shared };
+    } catch(e) { throw e; }
+  },
+  set: async function(key, value, shared) {
+    localStorage.setItem(this._key(key, shared), value);
+    return { key, value, shared: !!shared };
+  },
+  delete: async function(key, shared) {
+    localStorage.removeItem(this._key(key, shared));
+    return { key, deleted: true, shared: !!shared };
+  },
+  list: async function(prefix, shared) {
+    const p = this._key(prefix||'', shared);
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(p));
+    return { keys, shared: !!shared };
+  }
+};
+window.storage = window_storage;
+</script>
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ⚙️  관리자 설정 — 비밀번호 여기서 변경
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const ADMIN_PW = "hansowon2025";
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 질문 데이터
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const questions = [
+  { id:1, situation:"팀 회의에서 동료가 내 의견과 다른 방향을 제안했다.", options:[
+    { text:"잠깐, 그건 아닌 것 같은데? 팩트로 반박한다", types:["팩폭직설러","권위압박러"] },
+    { text:"오~ 나쁘진 않네요. (속으론 별론데…)", types:["비꼬기달인"] },
+    { text:"그냥 조용히 고개를 끄덕인다", types:["침묵방관러","예스남발러"] },
+    { text:"전에도 해봤는데 안 됐어요. 반대!", types:["부정대마왕","마이웨이러"] },
+  ]},
+  { id:2, situation:"업무 메신저에 확인이 필요한 메시지가 왔다.", options:[
+    { text:"읽긴 했는데… 나중에 답해야지 (그러다 잊음)", types:["읽씹장인"] },
+    { text:"바로 '네!' 답장. 어떻게 할지는 나중에 생각", types:["예스남발러"] },
+    { text:"내가 알아서 처리할 테니 걱정 말라고 한다", types:["정보잠금러"] },
+    { text:"필요한 내용만 간략히 회신한다", types:[] },
+  ]},
+  { id:3, situation:"내가 담당한 업무가 예상보다 늦어지고 있다.", options:[
+    { text:"협력사가 늦어서, 타팀이 자료를 안 줘서… (다 남 탓)", types:["책임회피러"] },
+    { text:"일단 '곧 됩니다!'라고 해놓고 계속 미룬다", types:["예스남발러","읽씹장인"] },
+    { text:"팀장한테 상황을 솔직하게 말한다", types:[] },
+    { text:"아무 말 없이 조용히 혼자 해결하려 한다", types:["정보잠금러","마이웨이러"] },
+  ]},
+  { id:4, situation:"보고서를 제출했더니 상사에게 피드백이 돌아왔다.", options:[
+    { text:"표정이 굳어진다. 말투도 달라진다", types:["감정폭발러","감정기복러"] },
+    { text:"알겠다고 하고, 나중에 동료에게 억울함을 털어놓는다", types:["뒷담화달인"] },
+    { text:"어떤 부분이 문제인지 구체적으로 다시 여쭤본다", types:[] },
+    { text:"내 방식이 맞으니 그냥 내 방식대로 다시 낸다", types:["마이웨이러","권위압박러"] },
+  ]},
+  { id:5, situation:"회의에서 '의견 있으신 분?' 하고 물었다.", options:[
+    { text:"할 말이 있지만… 괜히 말했다가 일 생길까봐 패스", types:["침묵방관러"] },
+    { text:"바로 손들고 전달. 근데 말이 좀 세게 나옴", types:["팩폭직설러"] },
+    { text:"생각했던 얘기 대신 다른 잡담이 먼저 나온다", types:["잡담폭격기"] },
+    { text:"일단 '네, 좋습니다!'하고 다 동의한다", types:["예스남발러"] },
+  ]},
+  { id:6, situation:"프로젝트 방향이 중간에 갑자기 바뀌었다.", options:[
+    { text:"어제 분명 이렇게 하라고 했잖아요! 왜 바꿔요?", types:["감정폭발러"] },
+    { text:"말은 안 하고 속으로만 부글부글", types:["침묵방관러","감정기복러"] },
+    { text:"그럼 이 방향으로! (어차피 또 바뀔 것 같은데)", types:["말번복달인","예스남발러"] },
+    { text:"어차피 내 파트는 내가 알아서. 원래 방식 유지", types:["마이웨이러"] },
+  ]},
+  { id:7, situation:"동료 A가 자리를 비웠을 때, 그 사람 실수 얘기가 나왔다.", options:[
+    { text:"이참에 평소 답답했던 점도 살짝 얘기한다", types:["뒷담화달인"] },
+    { text:"표정으로만 공감하고 말은 아낀다", types:["침묵방관러"] },
+    { text:"그 자리에서 A 편을 들어준다", types:[] },
+    { text:"웃으면서 '아, 그 사람 원래 그래요~' 하고 거든다", types:["비꼬기달인","뒷담화달인"] },
+  ]},
+  { id:8, situation:"업무 지시를 받았는데 내용이 좀 모호하다.", options:[
+    { text:"일단 알겠다고 하고, 내 방식대로 해서 낸다", types:["마이웨이러","예스남발러"] },
+    { text:"구체적으로 어떤 방향인지 재차 물어본다", types:[] },
+    { text:"완벽히 이해될 때까지 기다리다가 결국 늦게 시작", types:["읽씹장인","침묵방관러"] },
+    { text:"이 방향도 맞고, 저 방향도 맞고… 이랬다저랬다", types:["말번복달인","애매모호러"] },
+  ]},
+  { id:9, situation:"새로운 업무 방식 도입을 팀에서 논의 중이다.", options:[
+    { text:"그게 될까요? 전에도 해봤는데 효과 없었어요", types:["부정대마왕"] },
+    { text:"좋아요! (근데 왜 바꾸지, 지금도 잘 되는데)", types:["예스남발러","마이웨이러"] },
+    { text:"뭐가 달라지는 건지 조금 더 설명해 달라고 한다", types:[] },
+    { text:"아직 검토 중이라 말하기 어렵다며 얼버무린다", types:["정보잠금러","애매모호러"] },
+  ]},
+  { id:10, situation:"오늘 아침 사소한 일로 기분이 상했다.", options:[
+    { text:"별 거 아닌 후배 실수에도 말투가 차가워진다", types:["감정기복러","감정폭발러"] },
+    { text:"아무렇지 않은 척하지만 메시지 답장이 늦어진다", types:["읽씹장인","감정기복러"] },
+    { text:"점심 때 동료한테 하소연한다", types:["뒷담화달인"] },
+    { text:"기분을 추스르고 평소대로 일에 집중한다", types:[] },
+  ]},
+  { id:11, situation:"중요한 프로젝트 정보를 나만 먼저 알게 됐다.", options:[
+    { text:"정리되면 공유해야지… (그러다 사고 터진 뒤에야 알림)", types:["정보잠금러"] },
+    { text:"팀원들이 불안해할까봐 내가 알아서 처리하겠다고 함", types:["정보잠금러","마이웨이러"] },
+    { text:"바로 팀 단톡방에 공유한다", types:[] },
+    { text:"모호하게 '잘 되고 있다'고만 답한다", types:["애매모호러"] },
+  ]},
+  { id:12, situation:"회의가 시작됐는데 갑자기 지난 주말 얘기가 생각났다.", options:[
+    { text:"분위기 풀어준다며 주말 얘기를 꺼낸다", types:["잡담폭격기"] },
+    { text:"회의 끝나고 점심 때 얘기하기로 한다", types:[] },
+    { text:"얘기하다가 어느새 30분이 지나 있다", types:["잡담폭격기"] },
+    { text:"잡담은 별로 안 좋아해서 바로 안건으로 돌린다", types:[] },
+  ]},
+];
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 빌런 데이터
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const V = {
+  팩폭직설러:{ emoji:"💥", color:"#E74C3C", tag:"공격형", tagline:"맞는 말인데, 기분이 나쁨",
+    desc:"팩트는 정확하지만 표현이 무례할 때가 있어요. 본인은 솔직하다고 생각하지만 상대는 공격받았다고 느낄 수 있어요. '어떻게 말하느냐'가 '무엇을 말하느냐'만큼 중요해요.",
+    tips:[
+      { icon:"🗣️", title:"말하기 전 3초 자문하기", body:"피드백을 전하기 전 '이 말이 상대를 발전시키는가, 무너뜨리는가'를 3초간 생각하세요. 같은 내용도 질문형으로 바꾸면 훨씬 부드러워져요.\n→ \"이 부분은 왜 이렇게 구성했나요?\"" },
+      { icon:"✅", title:"동의 먼저, 보완 나중", body:"비판 전에 상대 의견 중 동의할 수 있는 부분을 먼저 인정하세요.\n→ \"예산 우려는 저도 공감해요. 그래서 대안을 생각해봤는데…\"" },
+      { icon:"📝", title:"감정과 메시지 분리하기", body:"상대 말투가 거칠어도 감정적으로 반응하지 말고 핵심 정보만 골라내세요.\n→ \"구체적으로 어떤 부분이 개선되면 좋을지 알려주시면 수정하겠습니다\"" },
+    ]},
+  비꼬기달인:{ emoji:"🌀", color:"#8E44AD", tag:"공격형", tagline:"칭찬인 듯, 칭찬이 아님",
+    desc:"칭찬인 듯 아닌 듯 미묘한 말로 상대를 당황하게 만들죠. 말한 사람은 쉽게 잊지만 들은 사람은 오래 곱씹어요.",
+    tips:[
+      { icon:"🎯", title:"의도를 질문으로 꺼내기", body:"비꼬는 말의 힘은 '모호함'에서 나와요.\n→ \"혹시 구체적으로 어떤 부분이 아쉬우셨나요?\"라고 되물으면 더 이상 농담 뒤에 숨지 못해요." },
+      { icon:"💬", title:"불편함을 담백하게 말하기", body:"→ \"사교성 덕분이라는 표현은 제 노력이 폄하되는 것 같아 조금 서운합니다.\" 감정을 과하지 않게, 하지만 분명하게 짚어주세요." },
+      { icon:"🤝", title:"팀 내 소통 규칙 제안하기", body:"→ \"우리 회의에서는 조롱이나 비꼼 대신 명확하게 개선점을 공유하면 좋겠습니다.\" 문화를 바꾸면 습관도 바뀌어요." },
+    ]},
+  감정폭발러:{ emoji:"🌋", color:"#E67E22", tag:"공격형", tagline:"폭탄처럼 터지는 감정에 주변은 얼음",
+    desc:"감정이 풍부하다는 건 장점이지만, 그 에너지가 폭발로 향하면 주변이 얼어붙어요. 주변 사람들은 업무보다 '어떻게 심기를 건드리지 않을까'에 에너지를 쏟게 돼요.",
+    tips:[
+      { icon:"⏱️", title:"90초의 법칙", body:"감정이 폭발할 것 같을 때, 뇌는 약 90초간 흥분 상태를 유지해요.\n→ \"잠시 정리하고 다시 말씀드릴게요\"가 가장 강력한 전략이에요." },
+      { icon:"🎭", title:"상대 감정 먼저 인정하기", body:"감정을 정면으로 반박하면 분노가 더 커져요.\n→ \"말씀하신 부분이 핵심인데, 제가 디테일을 놓쳐 번거롭게 해드렸네요.\"" },
+      { icon:"📍", title:"1:1 대화로 무대 전환하기", body:"여러 사람 앞에서는 감정이 더 격해지기 쉬워요.\n→ \"세부 내용은 이따가 자리로 찾아뵙고 가이드 받아도 될까요?\"" },
+    ]},
+  권위압박러:{ emoji:"👑", color:"#5D6D7E", tag:"공격형", tagline:"계급이 진리요, 논리!",
+    desc:"경험과 연차가 많지만 그게 대화를 막는 벽이 될 수 있어요. '내가 해봐서 안다'는 말이 팀원의 창의성과 의욕을 가로막고 있진 않은지 돌아봐야 해요.",
+    tips:[
+      { icon:"🙏", title:"권위 인정 후 사실 추가하기", body:"→ \"부장님 추진력 덕분에 큰 틀이 잡혔습니다. 여기에 이번 노후 설비 특이사항만 추가하면 리스크를 완벽히 줄일 수 있을 것 같습니다.\"" },
+      { icon:"❓", title:"도전이 아닌 확인 형태로 묻기", body:"→ \"일주일 안에 끝내는 걸 목표로 하겠습니다. 혹시 예상치 못한 변수 생길 경우 어떤 부분을 1순위로 조정할지 가이드만 미리 주시면 차질 없이 진행하겠습니다.\"" },
+      { icon:"📋", title:"사후 기록으로 간접 대응하기", body:"→ \"말씀하신 사항 누락되지 않도록 정리해서 메일로 공유하겠습니다.\" 기록은 감정 없이 사실을 남겨요." },
+    ]},
+  침묵방관러:{ emoji:"🤐", color:"#27AE60", tag:"회피형", tagline:"회의엔 참석, 존재감은 결석",
+    desc:"배려심 깊어 보이지만, 때로는 침묵이 방치나 책임 회피로 읽혀요. 내가 입을 닫는 동안 곁의 누군가는 혼자 무거운 고민을 짊어지고 있을 수 있어요.",
+    tips:[
+      { icon:"🎤", title:"대답을 질문으로 되묻기", body:"→ \"긍정적으로 봐주셔서 감사해요. 실무를 가장 잘 아시니까, 혹시 제가 놓친 현장 변수가 있으면 작은 거라도 말씀 부탁드려요.\"" },
+      { icon:"🔍", title:"범위를 좁힌 구체적 질문하기", body:"\"어떻게 생각하세요?\"보다 범위를 좁힌 질문이 효과적이에요.\n→ \"2페이지의 전략 방향은 어떻게 보셨나요?\"" },
+      { icon:"💡", title:"말한 내용이 반영됨을 보여주기", body:"→ \"지난번 말씀해주신 부분 실제 적용해봤더니 현장 반응이 정말 좋았어요.\" 반영됨을 경험하면 입이 열려요." },
+    ]},
+  읽씹장인:{ emoji:"👀", color:"#2E86C1", tag:"회피형", tagline:"읽었다! 분명 읽었는데…?",
+    desc:"읽고 나서 답장을 미루는 습관이 동료의 업무를 막는 병목이 되고 있어요. 메신저의 '읽음' 표시가 상대의 질문에 대한 답을 대신할 수는 없어요.",
+    tips:[
+      { icon:"⏰", title:"응답 기한을 구체적으로 명시하기", body:"→ \"이 내용은 오늘 오후 3시까지 확인 여부만이라도 회신 부탁드립니다.\" 기한이 명확하면 무응답을 방치할 여지가 줄어요." },
+      { icon:"😊", title:"반응 방식을 간소화하기", body:"→ \"안건 확인하신 분은 '좋아요' 이모지로 알려주세요.\" 문턱이 낮아지면 응답률이 올라가요." },
+      { icon:"📢", title:"무응답의 결과를 미리 예고하기", body:"→ \"목요일 오전까지 별도 회신 없으시면 '동의'로 간주하고 진행하겠습니다.\"" },
+    ]},
+  책임회피러:{ emoji:"🏃", color:"#C0392B", tag:"회피형", tagline:"전 하라는 대로 한 건데요?",
+    desc:"핑계가 항상 완벽하게 준비되어 있죠. 변명을 다듬는 데 쏟는 에너지를 해결책을 찾는 데 썼다면 어떨까요? 변명이 습관이 될수록 조직 내 입지는 좁아질 수밖에 없어요.",
+    tips:[
+      { icon:"🗂️", title:"역할과 책임을 사전에 명확히", body:"→ \"이번 기회에 R&R을 명확히 하죠. 윤대리님이 현장 점검 계획안부터 결과 보고까지 전체적으로 맡아 진행하시는 게 가장 효율적일 것 같습니다.\"" },
+      { icon:"🔎", title:"구체적 질문으로 핑계를 개선책으로", body:"\"시간이 부족했습니다\"에는\n→ \"다음엔 이런 상황이 또 생기지 않으려면 최소 며칠의 여유를 더 확보해야 할까요?\"" },
+      { icon:"🏆", title:"책임을 짊어지는 태도가 실력 증명", body:"→ \"누구 책임인지는 나중에 정리하기로 하고, 지금은 해결이 먼저입니다. 내일 오전까지 수정안을 보고해 주세요.\"" },
+    ]},
+  예스남발러:{ emoji:"🙋", color:"#D4AC0D", tag:"회피형", tagline:"항상 OK인데, 실행은 not OK",
+    desc:"모든 걸 받아들이는 당신, 실은 관계를 지키려는 마음이 크죠. 하지만 못 지키는 약속은 더 큰 상처를 남겨요.",
+    tips:[
+      { icon:"🎯", title:"'Yes'를 행동으로 구체화하기", body:"긍정적 답변을 들은 뒤 바로 되물으세요.\n→ \"그럼 구체적으로 어떤 순서로 진행할지, 일정은 어떻게 잡으면 좋을지 지금 정리해볼까요?\"" },
+      { icon:"🛡️", title:"'거절해도 괜찮다'는 신호 주기", body:"→ \"혹시라도 우려되는 부분은 지금 말씀주시는 게 나중에 문제가 생기는 것보다 훨씬 도움이 됩니다. 일정상 무리면 지금 편하게 말씀해 주세요.\"" },
+      { icon:"📅", title:"중간 점검을 공식 절차로 만들기", body:"→ \"그럼 15일에 중간 진행 상황을 한 번 공유 부탁드릴게요.\" 과잉 수락으로 인한 문제를 조기에 발견할 수 있어요." },
+    ]},
+  말번복달인:{ emoji:"🔄", color:"#16A085", tag:"교란형", tagline:"어제의 나와 오늘의 내가 협의 안 됨",
+    desc:"유연한 것처럼 보이지만 근거 없는 번복은 무책임으로 읽혀요. 결정이 바뀔 때 '왜 바뀌었는지' 설명할 줄 아는 태도가 신뢰를 만들어요.",
+    tips:[
+      { icon:"📝", title:"모든 합의를 기록으로 남기기", body:"→ \"오늘 논의한 내용 정리해서 메일로 보내드리겠습니다. 수정할 부분 있으면 회신 주세요.\"" },
+      { icon:"🏷️", title:"의견에 이름 붙이기", body:"→ \"부장님이 최종 결정하신 2안으로 정리하겠습니다. 부서 단톡방에 컨펌 사안으로 올려두겠습니다.\"" },
+      { icon:"💰", title:"번복 비용을 정중히 고지하기", body:"→ \"바뀐 방향도 일리가 있습니다. 다만 이미 실행 단계라 지금 변경하면 추가 비용과 일정 지연이 불가피합니다. 감안해서 진행할까요?\"" },
+    ]},
+  감정기복러:{ emoji:"🌦️", color:"#2980B9", tag:"교란형", tagline:"10분 전 맑음, 지금은 흐림",
+    desc:"오전엔 맑음, 오후엔 흐림… 주변 동료들이 눈치를 보며 일하고 있진 않나요? 말과 태도에 일관성이 없으면 함께 일하는 사람들은 금방 지치게 돼요.",
+    tips:[
+      { icon:"📊", title:"감정보다 기준을 먼저 확인하기", body:"→ \"차장님, 어제 회의에서는 A가 가장 효율적이라고 결정하셨는데, 혹시 새로운 변수가 생겼을까요?\"" },
+      { icon:"🔒", title:"긍정적 감정을 즉시 실행으로 연결하기", body:"→ \"그럼 다음 단계로 진행해도 괜찮을까요? 내용 정리해서 메일 드리겠습니다.\" 좋은 기분의 결정을 공식화하세요." },
+      { icon:"🗓️", title:"모든 합의를 기록으로 남기기", body:"구두 합의는 감정에 흔들리기 쉬워요. 회의록이나 메일로 합의 내용을 남기면 감정이 아닌 기록이 기준이 돼요." },
+    ]},
+  애매모호러:{ emoji:"🌫️", color:"#7F8C8D", tag:"교란형", tagline:"듣는 사람마다 해석이 다름",
+    desc:"'임팩트 있게', '빨리', '잘 해봐'… 듣는 사람은 점쟁이가 되어야 해요. 명확한 말 한마디가 누군가의 불필요한 야근을 없애줘요.",
+    tips:[
+      { icon:"✂️", title:"막연한 형용사를 선택지로 쪼개기", body:"→ \"임팩트라면 '데이터 시각화'를 보강할까요? 아니면 '핵심 메시지' 위주로 요약하는 방향이 좋을까요?\"" },
+      { icon:"🕐", title:"기한을 실제 일정으로 변환하기", body:"→ \"최대한 빨리라면 이번 주 금요일 오후 3시까지 초안을 드리면 될까요?\"" },
+      { icon:"🔁", title:"이해한 내용을 요약해서 확인받기", body:"→ \"A 자료를 먼저 완성하고 비용 절감 위주로 구성하라는 뜻으로 이해했습니다. 맞을까요?\"" },
+    ]},
+  뒷담화달인:{ emoji:"🗣️", color:"#C0392B", tag:"교란형", tagline:"내가 험담하려는 건 아닌데…",
+    desc:"말한 사람은 가볍게 넘기지만 들은 사람은 오래 기억해요. 뒷담화는 당사자 앞에서 말하기 어려운 비판이나 불만이 제3자를 통해 새어 나가는 행위예요.",
+    tips:[
+      { icon:"🧭", title:"감정엔 공감, 내용엔 거리 두기", body:"→ \"회의가 길어져서 피곤하셨겠어요. 박차장님이 강조하고 싶었던 포인트가 뭐길래 그랬을까요?\" '사람'이 아닌 '상황'으로 대화를 옮기세요." },
+      { icon:"🏛️", title:"공식 소통 창구로 안내하기", body:"→ \"이 부분은 부서 회의나 정기 피드백 시간에 안건으로 올려보는 건 어떨까요?\"" },
+      { icon:"🚪", title:"당사자를 대화에 초대하기", body:"뒷담화의 본질은 '부재'에 있어요.\n→ \"다음 회의 때 같이 논의해보는 건 어떨까요?\"" },
+    ]},
+  잡담폭격기:{ emoji:"✈️", color:"#D35400", tag:"교란형", tagline:"잡담은 진행 중, 안건은 대기 중",
+    desc:"분위기 메이커로 사랑받지만, 때와 장소를 가리지 않으면 '시간 도둑'이 되어버려요.",
+    tips:[
+      { icon:"↩️", title:"화제를 부드럽게 전환하기", body:"→ \"자세한 후기는 이따 쉬는 시간에 더 들려주세요. 이제 회의 안건으로 들어가 볼까요?\"" },
+      { icon:"⏱️", title:"시간 제한을 명분으로 활용하기", body:"→ \"이번 안건은 10분 안에 정리해야 합니다. 우선 일정부터 확정 짓고 나머지를 나눠볼까요?\"" },
+      { icon:"🎭", title:"타임키퍼 역할 맡기기", body:"→ \"오늘은 타임키퍼 역할을 맡아주시면 어떨까요? 이야기가 샐 때마다 저희를 본론으로 잡아주시면 감사하겠습니다.\"" },
+    ]},
+  부정대마왕:{ emoji:"🚫", color:"#922B21", tag:"자기중심형", tagline:"'안 돼요'는 자동반사, '왜요?'엔 버퍼링 중",
+    desc:"리스크를 먼저 보는 건 좋지만, 대안 없는 NO는 소통의 길을 막는 바리케이드예요.",
+    tips:[
+      { icon:"❓", title:"반대의 이유를 구체적으로 질문하기", body:"→ \"어떤 리스크 때문에 그렇게 판단하셨는지 궁금합니다. 우려하시는 부분을 짚어주시면 보완해서 다시 검토해 보겠습니다.\"" },
+      { icon:"🧩", title:"작은 부분부터 동의 이끌어내기", body:"→ \"우선 '작업 속도가 개선될 가능성' 자체에는 공감하시나요? 그 부분이 맞다면, 적용 범위를 좁혀서 검토해볼 수 있을 것 같습니다\"" },
+      { icon:"🌱", title:"공감 먼저, 설득은 나중에", body:"→ \"저도 리스크가 걱정되거든요. 그 위험을 최소화할 안전장치를 먼저 논의해보고 싶은데 괜찮으실까요?\"" },
+    ]},
+  마이웨이러:{ emoji:"🚗", color:"#1A5276", tag:"자기중심형", tagline:"직진 신호에도 나는 우회전",
+    desc:"자기 확신이 강한 당신, 하지만 그 확신이 팀의 대화를 단절시키면 고립이 시작돼요.",
+    tips:[
+      { icon:"📈", title:"데이터로 논의를 객관화하기", body:"→ \"말씀하신 방식도 일리가 있습니다. 다만 최근 3년간 데이터에서는 A방안의 오류율이 15% 더 낮게 나와서요. 다시 한 번 살펴보면 어떨까요?\"" },
+      { icon:"🧪", title:"작은 범위에서 테스트 제안하기", body:"→ \"전체가 아니라 특정 구간에만 먼저 적용해보고 판단하면 어떨까요?\"" },
+      { icon:"👥", title:"팀의 합의를 명분으로 내세우기", body:"→ \"부서 전체가 납득하고 한마음으로 실행할 수 있도록, 다른 분들의 의견도 들어보고 최종 결정하면 어떨까요?\"" },
+    ]},
+  정보잠금러:{ emoji:"🔐", color:"#117A65", tag:"자기중심형", tagline:"필요한 정보는 나만 아는 미니 국정원",
+    desc:"정보를 혼자 쥐고 있으면 순간은 강해 보이지만, 결국 동료의 신뢰를 잃고 혼자 고립돼요.",
+    tips:[
+      { icon:"🎯", title:"공유 목적을 명확히 전달하기", body:"→ \"보고서 방향을 잡는 데 꼭 필요한 기초 데이터라, 현재 수준에서라도 먼저 공유해 주시면 도움이 되겠습니다.\"" },
+      { icon:"📦", title:"부분 공유 요청으로 문턱 낮추기", body:"→ \"핵심 수치 몇 가지만 미리 알 수 있을까요? 초안 수준이라도 공유해 주시면 나중에 재작업하는 시간을 줄일 수 있어요.\"" },
+      { icon:"🌟", title:"공유된 정보에 긍정적 피드백하기", body:"→ \"일정을 미리 귀띔해주신 덕분에 이번에 큰 사고 없이 대응할 수 있었습니다. 정말 감사합니다.\"" },
+    ]},
+};
+
+const VList = Object.keys(V);
+const DEPTS = ["발전부","기술부","대외협력팀"];
+
+function getResult(sc) {
+  let max=0, top=null, sMax=0, second=null;
+  for(const [k,v] of Object.entries(sc)){
+    if(v>max){sMax=max;second=top;max=v;top=k;}
+    else if(v>sMax){sMax=v;second=k;}
+  }
+  return { top: top||"예스남발러", second };
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 메인 앱
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function App() {
+  // steps: profile | quiz | result | browse | detail | adminLogin | admin
+  const [step, setStep] = useState("profile");
+  const [profile, setProfile] = useState({ dept:"", nickname:"" });
+  const [profileErr, setProfileErr] = useState("");
+  const [deptMode, setDeptMode] = useState("select"); // "select" | "custom"
+  const [currentQ, setCurrentQ] = useState(0);
+  const [scores, setScores] = useState({});
+  const [selected, setSelected] = useState(null);
+  const [animating, setAnimating] = useState(false);
+  const [result, setResult] = useState(null);
+  const [detailName, setDetailName] = useState(null);
+  const [detailFrom, setDetailFrom] = useState("result");
+  const [browseTag, setBrowseTag] = useState("전체");
+  // 관리자
+  const [pwInput, setPwInput] = useState("");
+  const [pwErr, setPwErr] = useState("");
+  const [allRecords, setAllRecords] = useState([]);
+  const [adminFilter, setAdminFilter] = useState("전체");
+  // 비밀 진입 (하단 텍스트 5번 클릭)
+  const tapCount = useRef(0);
+  const tapTimer = useRef(null);
+
+  const progress = (currentQ / questions.length) * 100;
+
+  // ── 스토리지 ────────────────────────────
+  const saveRecord = async (dept, nickname, topV) => {
+    try {
+      const r = await window.storage.get("vrecords", true);
+      const prev = r ? JSON.parse(r.value) : [];
+      const entry = {
+        dept, nickname,
+        villain: topV,
+        emoji: V[topV].emoji,
+        tag: V[topV].tag,
+        date: new Date().toLocaleDateString("ko-KR"),
+        time: new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}),
+      };
+      const updated = [entry, ...prev].slice(0, 200);
+      await window.storage.set("vrecords", JSON.stringify(updated), true);
+    } catch(e){ console.error(e); }
+  };
+
+  const loadAllRecords = async () => {
+    try {
+      const r = await window.storage.get("vrecords", true);
+      setAllRecords(r ? JSON.parse(r.value) : []);
+    } catch { setAllRecords([]); }
+  };
+
+  // ── 비밀 진입 탭 핸들러 ─────────────────
+  const handleSecretTap = () => {
+    tapCount.current += 1;
+    if(tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(()=>{ tapCount.current=0; }, 2000);
+    if(tapCount.current >= 5){ tapCount.current=0; setStep("adminLogin"); }
+  };
+
+  // ── 핸들러 ──────────────────────────────
+  const handleProfileSubmit = () => {
+    if(!profile.nickname.trim()){ setProfileErr("닉네임을 입력해 주세요!"); return; }
+    setProfileErr("");
+    setStep("quiz"); setCurrentQ(0); setScores({}); setSelected(null);
+  };
+
+  const handleSelect = (i) => {
+    if(animating || selected!==null) return;
+    setSelected(i);
+    const ns={...scores};
+    questions[currentQ].options[i].types.forEach(t=>{ ns[t]=(ns[t]||0)+1; });
+    setAnimating(true);
+    setTimeout(()=>{
+      setSelected(null); setAnimating(false);
+      if(currentQ+1>=questions.length){
+        const r=getResult(ns); setResult(r); setScores(ns); setStep("result");
+        saveRecord(profile.dept, profile.nickname, r.top);
+      } else { setScores(ns); setCurrentQ(currentQ+1); }
+    }, 550);
+  };
+
+  const openDetail=(name,from)=>{ setDetailName(name); setDetailFrom(from); setStep("detail"); };
+  const closeDetail=()=>setStep(detailFrom==="browse"?"browse":"result");
+
+  const handleRetry=()=>{
+    setStep("profile"); setCurrentQ(0); setScores({}); setSelected(null); setResult(null);
+    setProfile({dept:"",nickname:""});
+  };
+
+  const handleAdminLogin=()=>{
+    if(pwInput===ADMIN_PW){ setPwErr(""); loadAllRecords(); setStep("admin"); setPwInput(""); }
+    else { setPwErr("비밀번호가 틀렸습니다."); }
+  };
+
+  const clearRecords = async () => {
+    if(!window.confirm("정말 모든 기록을 삭제할까요?")) return;
+    try { await window.storage.set("vrecords","[]",true); setAllRecords([]); } catch{}
+  };
+
+  // ── PROFILE ─────────────────────────────
+  if(step==="profile") return (
+    <Wrap>
+      <Card cls="anim">
+        <CB mb={4}><Lbl>소통 유형 자가진단</Lbl></CB>
+        <CB mb={18}>
+          <div className="eb" style={{fontSize:50,marginBottom:8}}>🦹</div>
+          <h1 style={S.h1}>나도 소통빌런<br/>일까?</h1>
+          <p style={S.sub}>16가지 소통빌런 유형 중<br/>내 안에 숨어있는 빌런을 찾아보세요</p>
+        </CB>
+
+        <div style={S.formBox}>
+          <div style={{...S.sl,marginBottom:12}}>📝 참여자 정보</div>
+
+          {/* 부서 선택 */}
+          <div style={{marginBottom:12}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+              <div style={S.il}>부서명 <span style={{color:"rgba(255,255,255,0.3)",fontSize:11}}>(선택)</span></div>
+              <button onClick={()=>{ setDeptMode(m=>m==="select"?"custom":"select"); setProfile(p=>({...p,dept:""})); }}
+                style={{background:"none",border:"none",cursor:"pointer",fontFamily:"'Gowun Dodum',sans-serif",fontSize:11,color:"rgba(167,139,250,0.8)",padding:0,textDecoration:"underline"}}>
+                {deptMode==="select"?"✏️ 직접 입력":"📋 목록에서 선택"}
+              </button>
+            </div>
+            {deptMode==="select" ? (
+              <select style={S.sel} value={profile.dept}
+                onChange={e=>setProfile(p=>({...p,dept:e.target.value}))}>
+                <option value="">-- 선택 안 함 --</option>
+                {DEPTS.map(d=><option key={d} value={d}>{d}</option>)}
+              </select>
+            ) : (
+              <input style={S.inp} placeholder="부서명을 직접 입력하세요"
+                value={profile.dept} maxLength={20}
+                onChange={e=>setProfile(p=>({...p,dept:e.target.value}))}
+                onKeyDown={e=>e.key==="Enter"&&handleProfileSubmit()} />
+            )}
+          </div>
+
+          {/* 닉네임 */}
+          <div>
+            <div style={S.il}>닉네임 <span style={{color:"#f472b6",fontSize:11}}>*필수</span></div>
+            <input style={{...S.inp, borderColor:profileErr?"rgba(244,114,182,0.6)":"rgba(255,255,255,0.12)"}}
+              placeholder="예: 소통왕, 읽씹러, 회의의신…"
+              value={profile.nickname} maxLength={12}
+              onChange={e=>{setProfile(p=>({...p,nickname:e.target.value}));setProfileErr("");}}
+              onKeyDown={e=>e.key==="Enter"&&handleProfileSubmit()} />
+            {profileErr && <div style={{fontSize:12,color:"#f472b6",marginTop:5,fontFamily:"'Gowun Dodum',sans-serif"}}>⚠️ {profileErr}</div>}
+          </div>
+        </div>
+
+        <StatRow>
+          <St n="12" l="질문 수"/><Dv/><St n="3분" l="소요 시간"/><Dv/><St n="16" l="빌런 유형"/>
+        </StatRow>
+
+        <CB>
+          <button className="btn-p" onClick={handleProfileSubmit}>검사 시작하기 →</button>
+        </CB>
+
+        {/* 비밀 진입 버튼 — 눈에 안 띄게 */}
+        <p onClick={handleSecretTap}
+          style={{...S.micro, marginTop:14, cursor:"default", userSelect:"none"}}>
+          * 이 검사는 자기 성찰을 위한 가이드입니다
+        </p>
+      </Card>
+    </Wrap>
+  );
+
+  // ── QUIZ ────────────────────────────────
+  if(step==="quiz") return (
+    <Wrap>
+      <Card cls="anim">
+        <div style={S.userBadge}>
+          <span style={{fontSize:15}}>🦹</span>
+          <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.78)"}}>
+            {profile.dept&&<span style={{color:"rgba(255,255,255,0.4)",marginRight:4}}>{profile.dept} ·</span>}
+            <b style={{color:"white"}}>{profile.nickname||"익명"}</b>
+          </span>
+        </div>
+
+        <div style={{marginBottom:20}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:7}}>
+            <span style={S.tiny}>Q{currentQ+1} / {questions.length}</span>
+            <span style={{...S.tiny,color:"rgba(167,139,250,0.9)"}}>{Math.round(progress)}%</span>
+          </div>
+          <div style={{height:4,background:"rgba(255,255,255,0.07)",borderRadius:99}}>
+            <div className="pfill" style={{width:`${progress}%`}}/>
+          </div>
+        </div>
+
+        <div style={{...S.sl,marginBottom:8}}>상황</div>
+        <div style={S.situBox}><p style={S.situTxt}>{questions[currentQ].situation}</p></div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:9,marginTop:18}}>
+          {["A","B","C","D"].map((l,i)=>(
+            <button key={i} className={`opt${selected===i?" sel":""}`}
+              onClick={()=>handleSelect(i)} disabled={selected!==null}>
+              <span className="opt-l">{l}</span>
+              {questions[currentQ].options[i].text}
+            </button>
+          ))}
+        </div>
+      </Card>
+    </Wrap>
+  );
+
+  // ── RESULT ──────────────────────────────
+  if(step==="result"&&result){
+    const v=V[result.top], sv=result.second?V[result.second]:null;
+    const others=VList.filter(n=>n!==result.top&&n!==result.second).slice(0,8);
+    return (
+      <Wrap>
+        <Card cls="anim" scroll>
+          <div style={S.userBadge}>
+            <span>👤</span>
+            <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.8)"}}>
+              {profile.dept&&<span style={{color:"rgba(255,255,255,0.42)"}}>{profile.dept} · </span>}
+              <b style={{color:"white"}}>{profile.nickname||"익명"}</b>님의 결과
+            </span>
+          </div>
+
+          <CB mb={4}><Lbl>나의 소통 유형은</Lbl></CB>
+          <CB mb={16}>
+            <div style={{background:`linear-gradient(135deg,${v.color}33,${v.color}55)`,border:`2px solid ${v.color}88`,borderRadius:20,padding:"18px 30px",display:"inline-block"}}>
+              <div className="eb" style={{fontSize:46,marginBottom:6}}>{v.emoji}</div>
+              <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:24,color:"white"}}>{result.top}</div>
+              <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:`${v.color}cc`,marginTop:4}}>{v.tagline}</div>
+              <span style={{...S.badge,background:`${v.color}44`,color:`${v.color}ee`,border:`1px solid ${v.color}55`,marginTop:8}}>{v.tag}</span>
+            </div>
+          </CB>
+
+          <div style={S.descBox}><p style={S.descTxt}>{v.desc}</p></div>
+
+          <div style={{marginBottom:16}}>
+            <div style={{...S.sl,marginBottom:10}}>💡 구체적인 성장 팁</div>
+            <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              {v.tips.map((t,i)=>(
+                <div key={i} style={{background:`linear-gradient(135deg,${v.color}18,transparent)`,border:`1px solid ${v.color}30`,borderRadius:12,padding:"12px 14px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                    <span style={{fontSize:15}}>{t.icon}</span>
+                    <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"white"}}>{t.title}</span>
+                  </div>
+                  <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.72)",lineHeight:1.7,whiteSpace:"pre-line"}}>{t.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {sv&&result.second&&(
+            <button className="sv-btn" onClick={()=>openDetail(result.second,"result")}>
+              <div style={{fontSize:24}}>{sv.emoji}</div>
+              <div style={{flex:1}}>
+                <div style={S.tiny}>숨어있는 두 번째 유형</div>
+                <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:14,color:"white",marginTop:2}}>{result.second}</div>
+                <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.4)",marginTop:2}}>{sv.tagline} · 자세히 보기 →</div>
+              </div>
+              <span style={{color:"rgba(255,255,255,0.25)",fontSize:18}}>›</span>
+            </button>
+          )}
+
+          <div style={{borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:14,marginBottom:14}}>
+            <div style={{...S.sl,marginBottom:9}}>🗂️ 다른 빌런 유형 둘러보기</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {others.map(name=>(
+                <button key={name} className="chip" onClick={()=>openDetail(name,"result")} style={{borderColor:`${V[name].color}55`}}>
+                  <span>{V[name].emoji}</span>
+                  <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.75)"}}>{name}</span>
+                </button>
+              ))}
+              <button className="chip" onClick={()=>setStep("browse")} style={{borderColor:"rgba(255,255,255,0.18)"}}>
+                <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.45)"}}>전체 16종 →</span>
+              </button>
+            </div>
+          </div>
+
+          <CB style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:14}}>
+            <p style={{...S.micro,marginBottom:12}}>빌런을 자각하는 순간, 더 나은 선택을 할 수 있어요 🌱</p>
+            <button className="btn-g" onClick={handleRetry}>다시 해보기</button>
+          </CB>
+        </Card>
+      </Wrap>
+    );
+  }
+
+  // ── BROWSE ──────────────────────────────
+  if(step==="browse"){
+    const tags=["전체","공격형","회피형","교란형","자기중심형"];
+    const filtered=VList.filter(n=>browseTag==="전체"||V[n].tag===browseTag);
+    return (
+      <Wrap>
+        <Card cls="anim" scroll>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+            <button className="back" onClick={()=>setStep("result")}>← 결과로</button>
+            <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:17,color:"white"}}>소통빌런 도감</span>
+          </div>
+          <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
+            {tags.map(t=>(
+              <button key={t} className={`tb${browseTag===t?" on":""}`} onClick={()=>setBrowseTag(t)}>{t}</button>
+            ))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
+            {filtered.map(name=>{const dv=V[name];return(
+              <button key={name} className="dex" onClick={()=>openDetail(name,"browse")}
+                style={{background:`linear-gradient(135deg,${dv.color}22,rgba(0,0,0,0.25))`,borderColor:`${dv.color}44`}}>
+                <div style={{fontSize:28,marginBottom:4}}>{dv.emoji}</div>
+                <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:12.5,color:"white",lineHeight:1.3}}>{name}</div>
+                <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:10.5,color:"rgba(255,255,255,0.4)",marginTop:3,lineHeight:1.4}}>{dv.tagline}</div>
+                <span style={{...S.badge,background:`${dv.color}33`,color:`${dv.color}cc`,border:`1px solid ${dv.color}44`,marginTop:7,fontSize:10}}>{dv.tag}</span>
+              </button>
+            );})}
+          </div>
+        </Card>
+      </Wrap>
+    );
+  }
+
+  // ── DETAIL ──────────────────────────────
+  if(step==="detail"&&detailName){
+    const dv=V[detailName];
+    const sameTag=VList.filter(n=>n!==detailName&&V[n].tag===dv.tag);
+    return (
+      <Wrap>
+        <Card cls="anim" scroll>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+            <button className="back" onClick={closeDetail}>← 뒤로</button>
+            <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.45)"}}>빌런 상세 보기</span>
+          </div>
+          <CB mb={16}>
+            <div style={{background:`linear-gradient(135deg,${dv.color}33,${dv.color}55)`,border:`2px solid ${dv.color}77`,borderRadius:18,padding:"16px 28px",display:"inline-block"}}>
+              <div className="eb" style={{fontSize:44,marginBottom:6}}>{dv.emoji}</div>
+              <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:22,color:"white"}}>{detailName}</div>
+              <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:`${dv.color}bb`,marginTop:3}}>{dv.tagline}</div>
+              <span style={{...S.badge,background:`${dv.color}44`,color:`${dv.color}ee`,border:`1px solid ${dv.color}55`,marginTop:7}}>{dv.tag}</span>
+            </div>
+          </CB>
+          <div style={S.descBox}><p style={S.descTxt}>{dv.desc}</p></div>
+          <div style={{marginBottom:16}}>
+            <div style={{...S.sl,marginBottom:10}}>💡 구체적인 성장 팁</div>
+            <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              {dv.tips.map((t,i)=>(
+                <div key={i} style={{background:`linear-gradient(135deg,${dv.color}18,transparent)`,border:`1px solid ${dv.color}30`,borderRadius:12,padding:"12px 14px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                    <span style={{fontSize:15}}>{t.icon}</span>
+                    <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"white"}}>{t.title}</span>
+                  </div>
+                  <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.72)",lineHeight:1.7,whiteSpace:"pre-line"}}>{t.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          {sameTag.length>0&&(
+            <div style={{borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:14,marginBottom:14}}>
+              <div style={{...S.sl,marginBottom:8}}>같은 {dv.tag} 빌런들</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {sameTag.map(name=>(
+                  <button key={name} className="chip" onClick={()=>setDetailName(name)} style={{borderColor:`${V[name].color}55`}}>
+                    <span>{V[name].emoji}</span>
+                    <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.75)"}}>{name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <CB><button className="btn-g" onClick={()=>setStep("browse")}>전체 도감 보기</button></CB>
+        </Card>
+      </Wrap>
+    );
+  }
+
+  // ── 관리자 로그인 ────────────────────────
+  if(step==="adminLogin") return (
+    <Wrap>
+      <Card cls="anim">
+        <CB mb={16}>
+          <div style={{fontSize:40,marginBottom:10}}>🔑</div>
+          <div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:20,color:"white",marginBottom:6}}>관리자 모드</div>
+          <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.45)"}}>비밀번호를 입력하세요</p>
+        </CB>
+        <div style={{marginBottom:16}}>
+          <input type="password"
+            style={{...S.inp, textAlign:"center", fontSize:18, letterSpacing:"0.2em",
+              borderColor:pwErr?"rgba(244,114,182,0.6)":"rgba(255,255,255,0.12)"}}
+            placeholder="••••••••"
+            value={pwInput}
+            onChange={e=>{setPwInput(e.target.value);setPwErr("");}}
+            onKeyDown={e=>e.key==="Enter"&&handleAdminLogin()} />
+          {pwErr&&<div style={{textAlign:"center",fontSize:12,color:"#f472b6",marginTop:6,fontFamily:"'Gowun Dodum',sans-serif"}}>⚠️ {pwErr}</div>}
+        </div>
+        <CB style={{gap:10,display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <button className="btn-p" onClick={handleAdminLogin}>입장하기</button>
+          <button className="btn-g" style={{marginTop:4}} onClick={()=>setStep("profile")}>돌아가기</button>
+        </CB>
+      </Card>
+    </Wrap>
+  );
+
+  // ── 관리자 패널 ──────────────────────────
+  if(step==="admin"){
+    const deptTabs=["전체",...DEPTS];
+    const filtered=adminFilter==="전체"?allRecords:allRecords.filter(r=>r.dept===adminFilter);
+
+    // 통계
+    const countByVillain={};
+    const countByDept={};
+    allRecords.forEach(r=>{
+      countByVillain[r.villain]=(countByVillain[r.villain]||0)+1;
+      if(r.dept) countByDept[r.dept]=(countByDept[r.dept]||0)+1;
+    });
+    const topVillains=Object.entries(countByVillain).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+    return (
+      <Wrap>
+        <div style={{width:"100%",maxWidth:520,position:"relative",zIndex:1}}>
+          {/* 헤더 */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:18,color:"white"}}>🔑 관리자 패널</span>
+              <span style={{...S.badge,background:"rgba(167,139,250,0.2)",color:"rgba(167,139,250,0.9)",border:"1px solid rgba(167,139,250,0.3)"}}>총 {allRecords.length}건</span>
+            </div>
+            <button className="back" onClick={()=>setStep("profile")}>나가기</button>
+          </div>
+
+          {/* 통계 카드 */}
+          <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"16px",marginBottom:12}}>
+            <div style={{...S.sl,marginBottom:10}}>📊 빌런 유형 TOP 5</div>
+            <div style={{display:"flex",flexDirection:"column",gap:7}}>
+              {topVillains.map(([name,cnt],i)=>(
+                <div key={name} style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)",width:18}}>{i+1}</span>
+                  <span style={{fontSize:18}}>{V[name]?.emoji}</span>
+                  <span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"white",flex:1}}>{name}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{height:6,width:`${Math.round((cnt/allRecords.length)*80)+8}px`,background:`${V[name]?.color||"#888"}88`,borderRadius:99}}/>
+                    <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:`${V[name]?.color||"#888"}dd`}}>{cnt}명</span>
+                  </div>
+                </div>
+              ))}
+              {topVillains.length===0&&<p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)"}}>아직 참여 기록이 없어요</p>}
+            </div>
+
+            {/* 부서별 */}
+            {Object.keys(countByDept).length>0&&(
+              <div style={{borderTop:"1px solid rgba(255,255,255,0.07)",marginTop:12,paddingTop:12}}>
+                <div style={{...S.sl,marginBottom:8}}>🏢 부서별 참여</div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {Object.entries(countByDept).map(([d,c])=>(
+                    <div key={d} style={{background:"rgba(255,255,255,0.06)",borderRadius:99,padding:"4px 12px",fontFamily:"'Gowun Dodum',sans-serif",fontSize:12,color:"rgba(255,255,255,0.7)"}}>
+                      {d} <b style={{color:"white"}}>{c}</b>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 필터 탭 */}
+          <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:10}}>
+            {deptTabs.map(t=>(
+              <button key={t} className={`tb${adminFilter===t?" on":""}`} onClick={()=>setAdminFilter(t)}>{t}</button>
+            ))}
+          </div>
+
+          {/* 기록 리스트 */}
+          <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:16,padding:"14px",maxHeight:"45vh",overflowY:"auto",marginBottom:10}}>
+            {filtered.length===0
+              ? <p style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,color:"rgba(255,255,255,0.35)",textAlign:"center",padding:"20px 0"}}>기록이 없어요</p>
+              : <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                  {filtered.map((r,i)=>(
+                    <div key={i} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"9px 12px",display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:20}}>{r.emoji}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                          <span style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:13,color:"white"}}>{r.nickname}</span>
+                          {r.dept&&<span style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11,color:"rgba(255,255,255,0.38)"}}>({r.dept})</span>}
+                        </div>
+                        <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:11.5,color:"rgba(255,255,255,0.5)",marginTop:2}}>
+                          {r.villain}
+                          <span style={{...S.badge,background:`${V[r.villain]?.color||"#888"}22`,color:`${V[r.villain]?.color||"#888"}bb`,border:"none",marginLeft:6,padding:"1px 7px",fontSize:10}}>{r.tag}</span>
+                        </div>
+                      </div>
+                      <div style={{fontFamily:"'Gowun Dodum',sans-serif",fontSize:10.5,color:"rgba(255,255,255,0.28)",textAlign:"right",flexShrink:0}}>
+                        {r.date}<br/>{r.time}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+            }
+          </div>
+
+          {/* 하단 버튼 */}
+          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+            <button className="btn-g" onClick={loadAllRecords}>새로고침 🔄</button>
+            <button onClick={clearRecords}
+              style={{background:"rgba(231,76,60,0.12)",border:"1px solid rgba(231,76,60,0.3)",borderRadius:11,padding:"10px 16px",color:"rgba(231,76,60,0.8)",fontFamily:"'Gowun Dodum',sans-serif",fontSize:13,cursor:"pointer"}}>
+              전체 삭제 🗑️
+            </button>
+          </div>
+        </div>
+      </Wrap>
+    );
+  }
+
+  return null;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 서브 컴포넌트
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function Wrap({children}){
+  return(
+    <div style={S.root}>
+      <style>{CSS}</style>
+      <div style={S.bg}/><div style={S.dots}/>
+      <div style={S.wrap}>{children}</div>
+    </div>
+  );
+}
+function Card({children,cls,scroll}){
+  return <div className={cls} style={{...S.card,...(scroll?{maxHeight:"90vh",overflowY:"auto"}:{})}}>{children}</div>;
+}
+function CB({children,mb,style}){ return <div style={{textAlign:"center",marginBottom:mb||0,...style}}>{children}</div>; }
+function Lbl({children}){ return <span style={S.lbl}>{children}</span>; }
+function StatRow({children}){ return <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"11px 14px",marginBottom:22,display:"flex",gap:14,justifyContent:"center"}}>{children}</div>; }
+function St({n,l}){ return <div style={{textAlign:"center"}}><div style={{fontFamily:"'Black Han Sans',sans-serif",fontSize:21,color:"white"}}>{n}</div><div style={{fontSize:11,color:"rgba(255,255,255,0.38)",fontFamily:"'Gowun Dodum',sans-serif"}}>{l}</div></div>; }
+function Dv(){ return <div style={{width:1,background:"rgba(255,255,255,0.1)"}}/>; }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 스타일
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const S={
+  root:{minHeight:"100vh",background:"#0d0b18",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px 14px",position:"relative",overflow:"hidden"},
+  bg:{position:"fixed",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 0%,rgba(88,28,135,0.4) 0%,transparent 70%),radial-gradient(ellipse 60% 50% at 85% 100%,rgba(236,72,153,0.15) 0%,transparent 60%)",pointerEvents:"none",zIndex:0},
+  dots:{position:"fixed",inset:0,backgroundImage:"radial-gradient(rgba(255,255,255,0.025) 1px,transparent 1px)",backgroundSize:"28px 28px",pointerEvents:"none",zIndex:0},
+  wrap:{width:"100%",maxWidth:456,position:"relative",zIndex:1},
+  card:{background:"rgba(255,255,255,0.04)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:22,padding:"24px 20px",boxShadow:"0 24px 60px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.06)"},
+  lbl:{fontSize:11.5,letterSpacing:"0.13em",color:"rgba(167,139,250,0.75)",fontFamily:"'Gowun Dodum',sans-serif",textTransform:"uppercase"},
+  h1:{fontFamily:"'Black Han Sans',sans-serif",fontSize:26,color:"white",lineHeight:1.3,letterSpacing:"-0.02em",marginTop:7},
+  sub:{color:"rgba(255,255,255,0.48)",fontSize:13.5,marginTop:8,fontFamily:"'Gowun Dodum',sans-serif",lineHeight:1.75},
+  sl:{fontSize:11,color:"rgba(167,139,250,0.7)",letterSpacing:"0.09em",fontFamily:"'Gowun Dodum',sans-serif",textTransform:"uppercase"},
+  tiny:{fontSize:11.5,color:"rgba(255,255,255,0.35)",fontFamily:"'Gowun Dodum',sans-serif"},
+  micro:{fontSize:11,color:"rgba(255,255,255,0.28)",fontFamily:"'Gowun Dodum',sans-serif",textAlign:"center"},
+  il:{fontFamily:"'Gowun Dodum',sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.6)",marginBottom:6},
+  inp:{width:"100%",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"white",fontFamily:"'Gowun Dodum',sans-serif",fontSize:14,outline:"none",transition:"border-color 0.2s"},
+  sel:{width:"100%",background:"rgba(255,255,255,0.06)",border:"1.5px solid rgba(255,255,255,0.12)",borderRadius:10,padding:"10px 14px",color:"white",fontFamily:"'Gowun Dodum',sans-serif",fontSize:14,outline:"none",cursor:"pointer",appearance:"none",WebkitAppearance:"none",backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M6 8L0 0h12z'/%3E%3C/svg%3E")`,backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center",paddingRight:38},
+  formBox:{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:16,padding:"18px 16px",marginBottom:20},
+  userBadge:{display:"flex",alignItems:"center",gap:8,marginBottom:14,background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"7px 12px"},
+  situBox:{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"14px 16px",borderLeft:"3px solid rgba(167,139,250,0.5)"},
+  situTxt:{fontFamily:"'Gowun Dodum',sans-serif",fontSize:15,color:"rgba(255,255,255,0.9)",lineHeight:1.68},
+  descBox:{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"13px 15px",marginBottom:14},
+  descTxt:{fontFamily:"'Gowun Dodum',sans-serif",fontSize:13.5,color:"rgba(255,255,255,0.8)",lineHeight:1.78},
+  badge:{display:"inline-block",borderRadius:99,padding:"3px 10px",fontSize:11,fontFamily:"'Gowun Dodum',sans-serif"},
+};
+
+const CSS=`
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Black+Han+Sans&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+
+.anim{animation:fiu .42s cubic-bezier(.4,0,.2,1) both;}
+@keyframes fiu{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.eb{animation:pulse 2.2s ease-in-out infinite;display:inline-block;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.07);}}
+
+.pfill{height:100%;border-radius:99px;background:linear-gradient(90deg,#a78bfa,#f472b6);transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+.opt{background:rgba(255,255,255,0.055);border:1.5px solid rgba(255,255,255,0.1);border-radius:13px;padding:13px 15px;cursor:pointer;transition:all .2s;font-family:'Gowun Dodum',sans-serif;font-size:14px;color:rgba(255,255,255,0.9);text-align:left;line-height:1.6;display:flex;align-items:flex-start;gap:10px;}
+.opt:hover{background:rgba(255,255,255,0.11);border-color:rgba(255,255,255,0.26);transform:translateY(-2px);}
+.opt.sel{background:rgba(255,255,255,0.16);border-color:rgba(255,255,255,0.42);transform:scale(0.98);}
+.opt-l{display:inline-flex;width:23px;height:23px;border-radius:50%;background:rgba(255,255,255,0.12);font-size:11px;font-weight:700;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+
+.btn-p{background:linear-gradient(135deg,#a78bfa 0%,#f472b6 100%);color:white;border:none;border-radius:13px;padding:14px 36px;font-size:15.5px;font-family:'Black Han Sans',sans-serif;cursor:pointer;letter-spacing:.04em;transition:all .2s;box-shadow:0 4px 20px rgba(167,139,250,0.35);}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(167,139,250,0.5);}
+.btn-g{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.58);border:1px solid rgba(255,255,255,0.14);border-radius:11px;padding:11px 26px;font-size:13.5px;font-family:'Gowun Dodum',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-g:hover{background:rgba(255,255,255,0.11);color:rgba(255,255,255,0.85);}
+.back{background:none;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:rgba(255,255,255,0.55);padding:5px 11px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-size:12.5px;transition:all .18s;}
+.back:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.85);}
+
+.sv-btn{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .2s;margin-bottom:14px;}
+.sv-btn:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);}
+
+.chip{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:99px;padding:5px 11px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .18s;font-size:13px;}
+.chip:hover{background:rgba(255,255,255,0.11);transform:translateY(-1px);}
+
+.dex{border:1.5px solid;border-radius:14px;padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s;display:flex;flex-direction:column;align-items:center;}
+.dex:hover{transform:translateY(-3px);filter:brightness(1.15);}
+
+.tb{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:99px;padding:5px 12px;cursor:pointer;font-family:'Gowun Dodum',sans-serif;font-size:12px;color:rgba(255,255,255,0.5);transition:all .18s;}
+.tb:hover{background:rgba(255,255,255,0.09);}
+.tb.on{background:rgba(167,139,250,0.25);border-color:rgba(167,139,250,0.55);color:rgba(167,139,250,1);}
+
+input:focus,select:focus{border-color:rgba(167,139,250,0.6)!important;outline:none;}
+input::placeholder{color:rgba(255,255,255,0.22);}
+select option{background:#1a1730;color:white;}
+`;
+
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+  </script>
+</body>
+</html>
