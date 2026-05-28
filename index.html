@@ -16,10 +16,8 @@
 <body>
 <div id="root"></div>
 <script>
-const _initVillain = (function(){
   try { var p=new URLSearchParams(window.location.search).get('result'); return p&&window._V&&window._V[p]?p:null; } catch(e){return null;}
 })();
-const _initStep = _initVillain ? 'sharedResult' : 'profile';
 
 window.storage={
   _k:function(k,s){return(s?'sh_':'lc_')+k;},
@@ -243,8 +241,6 @@ const TAG_COLOR = {
 
 const VList = Object.keys(V);
 window._V = V;
-const _initVillain2 = (function(){ try { var p=new URLSearchParams(window.location.search).get('result'); return p&&V[p]?p:null; } catch(e){return null;} })();
-const _initStep2 = _initVillain2 ? 'sharedResult' : 'profile';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 유형별 궁합
@@ -313,9 +309,8 @@ function wrapText(ctx, text, maxW, fontSize) {
 
 function App() {
   // steps: profile | quiz | result | browse | detail
-  const [step, setStep] = useState(_initStep2);
-  const [sharedVillain] = useState(_initVillain2);
-  const [profile, setProfile] = useState({ dept:"", nickname:"" });
+  const [step, setStep] = useState("profile");
+    const [profile, setProfile] = useState({ dept:"", nickname:"" });
   const [profileErr, setProfileErr] = useState("");
   const [deptMode, setDeptMode] = useState("select"); // "select" | "custom"
   const [currentQ, setCurrentQ] = useState(0);
@@ -384,7 +379,7 @@ function App() {
     setSaving(true);
     try {
       const vData = V[result.top];
-      const W = 720, H = 960;
+      const W = 720, H = 1200;
       const canvas = document.createElement("canvas");
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext("2d");
@@ -443,35 +438,107 @@ function App() {
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(80, 460); ctx.lineTo(W-80, 460); ctx.stroke();
 
-      // 설명
+      // 설명 (동적 y)
       ctx.font = "24px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.75)";
       ctx.textAlign = "center";
       const descLines = wrapText(ctx, vData.desc, W - 160, 24);
-      descLines.slice(0,4).forEach((line, i) => {
-        ctx.fillText(line, W/2, 500 + i * 38);
+      let descY = 500;
+      descLines.slice(0,4).forEach((line) => {
+        ctx.fillText(line, W/2, descY); descY += 38;
       });
 
       // 구분선2
-      ctx.beginPath(); ctx.moveTo(80, 680); ctx.lineTo(W-80, 680); ctx.stroke();
+      descY += 20;
+      ctx.beginPath(); ctx.moveTo(80, descY); ctx.lineTo(W-80, descY); ctx.stroke();
+      descY += 40;
+
+      // 💡 성장 팁 (제목만)
+      let cy = descY;
+      ctx.font = "bold 26px sans-serif";
+      ctx.fillStyle = "rgba(16,185,129,0.95)";
+      ctx.textAlign = "center";
+      ctx.fillText("💡 성장 팁", W/2, cy); cy += 44;
+      vData.tips.forEach((t) => {
+        ctx.font = "bold 22px sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "left";
+        ctx.fillText(t.icon + " " + t.title, 80, cy); cy += 38;
+      });
+
+      // 구분선3
+      cy += 10;
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.beginPath(); ctx.moveTo(80, cy); ctx.lineTo(W-80, cy); ctx.stroke();
+      cy += 40;
+
+      // 💞 궁합
+      const compat = COMPAT[result.top];
+      if(compat){
+        ctx.font = "bold 26px sans-serif";
+        ctx.fillStyle = "rgba(16,185,129,0.95)";
+        ctx.textAlign = "center";
+        ctx.fillText("💞 유형별 궁합", W/2, cy); cy += 44;
+
+        ctx.fillStyle = "rgba(46,213,115,0.12)";
+        roundRect(ctx, 80, cy, W-160, 80, 12); ctx.fill();
+        ctx.font = "bold 21px sans-serif"; ctx.fillStyle = "#2ed573"; ctx.textAlign = "left";
+        ctx.fillText((V[compat.best]?.emoji||"")+" "+compat.best+" — 잘 맞아요 💚", 104, cy+28);
+        ctx.font = "18px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.fillText(compat.bestDesc, 104, cy+56); cy += 100;
+
+        ctx.fillStyle = "rgba(255,71,87,0.12)";
+        roundRect(ctx, 80, cy, W-160, 80, 12); ctx.fill();
+        ctx.font = "bold 21px sans-serif"; ctx.fillStyle = "#ff4757"; ctx.textAlign = "left";
+        ctx.fillText((V[compat.worst]?.emoji||"")+" "+compat.worst+" — 조심해요 🔴", 104, cy+28);
+        ctx.font = "18px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.fillText(compat.worstDesc, 104, cy+56); cy += 110;
+      }
+
+      // 구분선4
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.beginPath(); ctx.moveTo(80, cy); ctx.lineTo(W-80, cy); ctx.stroke();
+      cy += 42;
 
       // 닉네임
       ctx.font = "bold 26px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.55)";
       ctx.textAlign = "center";
       const nameLabel = (profile.dept ? profile.dept + " · " : "") + (profile.nickname || "익명");
-      ctx.fillText(nameLabel, W/2, 730);
+      ctx.fillText(nameLabel, W/2, cy); cy += 42;
 
-      // 하단 워터마크
+      // 워터마크
       ctx.font = "22px sans-serif";
-      ctx.fillStyle = "rgba(167,139,250,0.5)";
-      ctx.fillText("소통하는 양양양수 만들기", W/2, 820);
+      ctx.fillStyle = "rgba(16,185,129,0.6)";
+      ctx.fillText("소통하는 양양양수 만들기", W/2, cy);
 
-      // 저장
-      const link = document.createElement("a");
-      link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      // 저장 — iOS/Android 공통
+      const dataUrl = canvas.toDataURL("image/png");
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if(isIOS){
+        // iOS: 이미지를 현재 페이지에 오버레이로 표시
+        const overlay = document.createElement("div");
+        overlay.style.cssText = "position:fixed;inset:0;background:#0B131E;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px;overflow-y:auto;";
+        const closeBtn = document.createElement("button");
+        closeBtn.textContent = "✕ 닫기";
+        closeBtn.style.cssText = "margin-bottom:16px;background:rgba(255,255,255,0.15);border:none;color:white;padding:10px 24px;border-radius:99px;font-size:15px;cursor:pointer;align-self:flex-end;";
+        closeBtn.onclick = () => document.body.removeChild(overlay);
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        img.style.cssText = "max-width:100%;border-radius:16px;margin-bottom:16px;";
+        const txt = document.createElement("p");
+        txt.textContent = "📸 이미지를 길게 눌러서 저장하세요!";
+        txt.style.cssText = "color:white;font-family:sans-serif;font-size:15px;text-align:center;margin:0;";
+        overlay.appendChild(closeBtn);
+        overlay.appendChild(img);
+        overlay.appendChild(txt);
+        document.body.appendChild(overlay);
+      } else {
+        const link = document.createElement("a");
+        link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
+        link.href = dataUrl;
+        link.click();
+      }
     } catch(e) {
       alert("이미지 저장 실패. 스크린샷을 이용해 주세요.");
     }
@@ -911,7 +978,6 @@ function App() {
 
   // ── 관리자 패널 ──────────────────────────
 
-  if(step==='sharedResult' && sharedVillain){
     const sv=V[sharedVillain];
     const sc=COMPAT[sharedVillain];
     const F="'Pretendard',-apple-system,sans-serif";
