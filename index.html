@@ -238,6 +238,7 @@ const TAG_COLOR = {
 };
 
 const VList = Object.keys(V);
+const _sv=(function(){try{var p=new URLSearchParams(location.search).get('result');return(p&&V[p])?p:null;}catch(e){return null;}})();
 window._V = V;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -306,7 +307,6 @@ function wrapText(ctx, text, maxW, fontSize) {
 }
 
 // URL로 결과 공유 처리
-const _sv=(function(){try{var p=new URLSearchParams(location.search).get('result');return(p&&V[p])?p:null;}catch(e){return null;}})();
 
 function App() {
   // steps: profile | quiz | result | browse | detail
