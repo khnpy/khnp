@@ -1,8 +1,36 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><title>나도 소통빌런일까? | 소통 유형 자가진단</title>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>나도 소통빌런일까? | 소통 유형 자가진단</title>
 <meta property="og:type" content="website">
 <meta property="og:title" content="나도 소통빌런일까? | 소통 유형 자가진단">
 <meta property="og:description" content="16가지 소통빌런 유형 중 내 안에 숨어있는 업무 소통 부캐를 찾아보세요! 🌱">
-<meta property="og:image" content="https://khnpy.github.io/khnp/thumbnail.png"><script src="https://unpkg.com/react@18/umd/react.production.min.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><style>body{margin:0;background:#0B131E;font-family:Pretendard,-apple-system,sans-serif;}*{-webkit-tap-highlight-color:transparent;}</style></head><body><div id="root"></div><script>const window_storage={_key:function(k,s){return(s?"sh_":"lc_")+k;},get:async function(k,s){const v=localStorage.getItem(this._key(k,s));if(v===null)throw new Error("nf");return{key:k,value:v,shared:!!s};},set:async function(k,v,s){localStorage.setItem(this._key(k,s),v);return{key:k,value:v,shared:!!s};},delete:async function(k,s){localStorage.removeItem(this._key(k,s));return{key:k,deleted:true,shared:!!s};}};window.storage=window_storage;</script><script type="text/babel" data-presets="react">const{useState,useEffect,useRef}=React;
+<meta property="og:image" content="https://khnpy.github.io/khnp/thumbnail.png">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>body{margin:0;background:#0B131E;font-family:Pretendard,-apple-system,sans-serif;}*{-webkit-tap-highlight-color:transparent;}</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const _initVillain = (function(){
+  try { var p=new URLSearchParams(window.location.search).get('result'); return p&&window._V&&window._V[p]?p:null; } catch(e){return null;}
+})();
+const _initStep = _initVillain ? 'sharedResult' : 'profile';
+
+window.storage={
+  _k:function(k,s){return(s?'sh_':'lc_')+k;},
+  get:async function(k,s){var v=localStorage.getItem(this._k(k,s));if(v===null)throw new Error('nf');return{key:k,value:v,shared:!!s};},
+  set:async function(k,v,s){localStorage.setItem(this._k(k,s),v);return{key:k,value:v,shared:!!s};},
+  delete:async function(k,s){localStorage.removeItem(this._k(k,s));return{key:k,deleted:true,shared:!!s};}
+};
+</script>
+<script type="text/babel" data-presets="react">
+const{useState,useEffect,useRef}=React;
+
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ⚙️  관리자 설정 — 비밀번호 여기서 변경
@@ -214,6 +242,9 @@ const TAG_COLOR = {
 };
 
 const VList = Object.keys(V);
+window._V = V;
+const _initVillain2 = (function(){ try { var p=new URLSearchParams(window.location.search).get('result'); return p&&V[p]?p:null; } catch(e){return null;} })();
+const _initStep2 = _initVillain2 ? 'sharedResult' : 'profile';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 유형별 궁합
@@ -280,14 +311,10 @@ function wrapText(ctx, text, maxW, fontSize) {
   return lines;
 }
 
-// URL 파라미터 초기값
-const _initVillain = (()=>{ try { const p=new URLSearchParams(window.location.search).get('result'); return p&&V[p]?p:null; } catch(e){return null;} })();
-const _initStep = _initVillain ? 'sharedResult' : 'profile';
-
 function App() {
   // steps: profile | quiz | result | browse | detail
-  const [step, setStep] = useState(_initStep);
-  const [sharedVillain] = useState(_initVillain);
+  const [step, setStep] = useState(_initStep2);
+  const [sharedVillain] = useState(_initVillain2);
   const [profile, setProfile] = useState({ dept:"", nickname:"" });
   const [profileErr, setProfileErr] = useState("");
   const [deptMode, setDeptMode] = useState("select"); // "select" | "custom"
@@ -343,10 +370,8 @@ function App() {
     setTimeout(()=>{
       setSelected(null); setAnimating(false);
       if(currentQ+1>=questions.length){
-        const r=getResult(ns); setResult(r); setScores(ns); setStep("result");
-        // URL에 결과 반영
-        const newUrl = window.location.pathname + window.location.search.replace(/[?&]result=[^&]*/,'') + (window.location.search ? '&' : '?') + 'result=' + encodeURIComponent(r.top);
-        window.history.replaceState(null, '', newUrl);
+        const r=getResult(ns); setResult(r); setScores(ns); setStep('result');
+        try{window.history.replaceState(null,'',window.location.pathname+'?result='+encodeURIComponent(r.top));}catch(e){}
         saveRecord(profile.dept, profile.nickname, r.top);
         sendToGoogleSheet(profile.dept, profile.nickname, r.top, V[r.top].tag);
       } else { setScores(ns); setCurrentQ(currentQ+1); }
@@ -359,7 +384,7 @@ function App() {
     setSaving(true);
     try {
       const vData = V[result.top];
-      const W = 720, H = 1100;
+      const W = 720, H = 960;
       const canvas = document.createElement("canvas");
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext("2d");
@@ -368,7 +393,7 @@ function App() {
       ctx.fillStyle = "#0B131E";
       ctx.fillRect(0, 0, W, H);
 
-      // 그라데이션
+      // 보라 그라데이션 상단
       const grad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H*0.7);
       grad.addColorStop(0, "rgba(16,185,129,0.4)");
       grad.addColorStop(1, "rgba(59,130,246,0)");
@@ -382,104 +407,71 @@ function App() {
 
       // 상단 라벨
       ctx.font = "bold 22px sans-serif";
-      ctx.fillStyle = "rgba(16,185,129,0.9)";
+      ctx.fillStyle = "rgba(167,139,250,0.85)";
       ctx.textAlign = "center";
       ctx.fillText("나도 소통빌런일까?", W/2, 110);
 
       // 이모지
       ctx.font = "96px serif";
-      ctx.fillText(vData.emoji, W/2, 240);
+      ctx.textAlign = "center";
+      ctx.fillText(vData.emoji, W/2, 250);
 
       // 빌런 이름
       ctx.font = "bold 52px sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(result.top, W/2, 310);
+      ctx.textAlign = "center";
+      ctx.fillText(result.top, W/2, 320);
 
       // 태그라인
       ctx.font = "28px sans-serif";
       ctx.fillStyle = vData.color + "cc";
-      ctx.fillText(vData.tagline, W/2, 358);
+      ctx.fillText(vData.tagline, W/2, 370);
 
       // 태그 배지
       const tc = {"공격형":"rgba(231,76,60,0.35)","회피형":"rgba(39,174,96,0.35)","교란형":"rgba(142,68,173,0.35)","자기중심형":"rgba(41,128,185,0.35)"};
-      const tagW = 180, tagH = 44, tagX = W/2 - tagW/2, tagY = 378;
+      const tagW = 160, tagH = 44, tagX = W/2 - tagW/2, tagY = 390;
       ctx.fillStyle = tc[vData.tag] || "rgba(255,255,255,0.15)";
       roundRect(ctx, tagX, tagY, tagW, tagH, 22);
       ctx.fill();
       ctx.font = "bold 22px sans-serif";
       ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
       ctx.fillText(vData.tag, W/2, tagY + 29);
 
       // 구분선
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
       ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(80, 445); ctx.lineTo(W-80, 445); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(80, 460); ctx.lineTo(W-80, 460); ctx.stroke();
 
-      // 설명 텍스트
+      // 설명
       ctx.font = "24px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.75)";
+      ctx.textAlign = "center";
       const descLines = wrapText(ctx, vData.desc, W - 160, 24);
-      descLines.slice(0, 4).forEach((line, i) => {
-        ctx.fillText(line, W/2, 490 + i * 40);
+      descLines.slice(0,4).forEach((line, i) => {
+        ctx.fillText(line, W/2, 500 + i * 38);
       });
 
       // 구분선2
-      const descBottom = 490 + Math.min(descLines.length, 4) * 40 + 20;
-      ctx.beginPath(); ctx.moveTo(80, descBottom); ctx.lineTo(W-80, descBottom); ctx.stroke();
-
-      // 성장 팁 제목
-      ctx.font = "bold 22px sans-serif";
-      ctx.fillStyle = "rgba(16,185,129,0.9)";
-      ctx.fillText("💡 나의 성장 팁", W/2, descBottom + 44);
-
-      // 팁 3개
-      let tipY = descBottom + 80;
-      vData.tips.forEach((tip, i) => {
-        ctx.font = "bold 20px sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "left";
-        ctx.fillText(`${tip.icon} ${tip.title}`, 80, tipY);
-        const bodyFirst = tip.body.split("
-")[0];
-        ctx.font = "18px sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.6)";
-        const bodyLines = wrapText(ctx, bodyFirst, W - 160, 18);
-        bodyLines.slice(0,1).forEach((line) => {
-          ctx.fillText(line, 80, tipY + 26);
-        });
-        tipY += 70;
-      });
-
-      // 구분선3
-      ctx.textAlign = "center";
-      ctx.strokeStyle = "rgba(255,255,255,0.1)";
-      ctx.beginPath(); ctx.moveTo(80, H-130); ctx.lineTo(W-80, H-130); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(80, 680); ctx.lineTo(W-80, 680); ctx.stroke();
 
       // 닉네임
       ctx.font = "bold 26px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.55)";
+      ctx.textAlign = "center";
       const nameLabel = (profile.dept ? profile.dept + " · " : "") + (profile.nickname || "익명");
-      ctx.fillText(nameLabel, W/2, H-90);
+      ctx.fillText(nameLabel, W/2, 730);
 
       // 하단 워터마크
       ctx.font = "22px sans-serif";
-      ctx.fillStyle = "rgba(16,185,129,0.6)";
-      ctx.fillText("소통하는 양양양수 만들기", W/2, H-52);
+      ctx.fillStyle = "rgba(167,139,250,0.5)";
+      ctx.fillText("소통하는 양양양수 만들기", W/2, 820);
 
-      // 저장 — iOS 대응
-      const dataUrl = canvas.toDataURL("image/png");
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (isIOS) {
-        // iOS: 새 탭으로 열어서 길게 눌러 저장
-        const win = window.open();
-        win.document.write('<html><body style="margin:0;background:#000"><img src="' + dataUrl + '" style="max-width:100%;display:block"/><p style="color:white;text-align:center;padding:16px;font-family:sans-serif">이미지를 길게 눌러 저장하세요 📸</p></body></html>');
-        win.document.close();
-      } else {
-        const link = document.createElement("a");
-        link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
-        link.href = dataUrl;
-        link.click();
-      }
+      // 저장
+      const link = document.createElement("a");
+      link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
     } catch(e) {
       alert("이미지 저장 실패. 스크린샷을 이용해 주세요.");
     }
@@ -574,7 +566,7 @@ function App() {
           <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:15,color:"#10B981",marginBottom:8}}>🌱 양양양수 소통 캠페인</div>
           <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.85)",lineHeight:1.6,marginBottom:12}}>
             이 테스트는 서로를 평가하거나 지적하기 위한 것이 아닙니다.<br/>
-            나의 소통 습관을 가볍게 돌아보고, 세대와 직급을 넘어 <b>서로를 더 깊이 이해하고 배려하며 일하기 위해</b> 준비했습니다. 편하게 즐겨주세요!
+            나의 소통 습관을 가볍게 돌아보고, 세대와 직급을 넘어 <b>서로를 더 깊이 이해하고 부드럽게 일하기 위해</b> 준비했습니다. 편하게 즐겨주세요!
           </p>
           <div style={{display:"flex",flexDirection:"column",gap:6,background:"rgba(0,0,0,0.15)",padding:"10px 12px",borderRadius:10}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -794,14 +786,10 @@ function App() {
 
           </div>{/* /resultRef */}
 
-          <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:14}}>
-            <p style={{...S.micro,marginBottom:14}}>빌런을 자각하는 순간, 더 나은 선택을 할 수 있어요 🌱</p>
-            <a href="https://naver.me/x6JxwVuC" target="_blank" rel="noopener noreferrer"
-              style={{display:"block",width:"100%",background:"linear-gradient(135deg,#10B981 0%,#3B82F6 100%)",color:"white",border:"none",borderRadius:13,padding:"15px",fontFamily:"Pretendard,-apple-system,sans-serif",fontSize:15,fontWeight:700,textAlign:"center",textDecoration:"none",boxShadow:"0 4px 20px rgba(16,185,129,0.3)",marginBottom:10,cursor:"pointer"}}>
-              📋 상호존중 설문 바로가기
-            </a>
-            <button className="btn-g" onClick={handleRetry} style={{width:"100%"}}>↩️ 다시 해보기</button>
-          </div>
+          <CB style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:14}}>
+            <p style={{...S.micro,marginBottom:12}}>빌런을 자각하는 순간, 더 나은 선택을 할 수 있어요 🌱</p>
+            <button className="btn-g" onClick={handleRetry}>다시 해보기</button>
+          </CB>
         </Card>
       </Wrap>
     );
@@ -919,69 +907,64 @@ function App() {
 
   // ── 관리자 패널 ──────────────────────────
 
-  // ── 공유된 결과 화면 ──
-  if(step==="sharedResult" && sharedVillain){
-    const v=V[sharedVillain];
-    const compat=COMPAT[sharedVillain];
-    const shareUrl = window.location.href;
+  if(step==='sharedResult' && sharedVillain){
+    const sv=V[sharedVillain];
+    const sc=COMPAT[sharedVillain];
+    const F="'Pretendard',-apple-system,sans-serif";
     return(
       <Wrap>
         <Card scroll>
-          <div style={{textAlign:"center",marginBottom:8}}>
-            <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11.5,color:"rgba(16,185,129,0.9)",letterSpacing:"0.1em",textTransform:"uppercase"}}>친구의 소통 유형</span>
+          <div style={{textAlign:'center',marginBottom:8}}>
+            <span style={{fontFamily:F,fontSize:12,color:'rgba(16,185,129,0.9)',letterSpacing:'0.1em'}}>친구의 소통 유형 결과</span>
           </div>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <div style={{background:`linear-gradient(135deg,${v.color}33,${v.color}55)`,border:`2px solid ${v.color}88`,borderRadius:20,padding:"18px 30px",display:"inline-block"}}>
-              <div style={{fontSize:52,marginBottom:8}}>{v.emoji}</div>
-              <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:26,color:"white",fontWeight:800}}>{sharedVillain}</div>
-              <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:`${v.color}cc`,marginTop:5}}>{v.tagline}</div>
-              <span style={{display:"inline-block",borderRadius:99,padding:"3px 12px",fontSize:11,fontFamily:"'Pretendard',-apple-system,sans-serif",background:TAG_COLOR[v.tag]?.bg,color:TAG_COLOR[v.tag]?.label,border:`1px solid ${TAG_COLOR[v.tag]?.border}`,marginTop:10,fontWeight:600}}>{v.tag}</span>
+          <div style={{textAlign:'center',marginBottom:16}}>
+            <div style={{background:sv.color+'33',border:'2px solid '+sv.color+'88',borderRadius:20,padding:'18px 30px',display:'inline-block'}}>
+              <div style={{fontSize:52,marginBottom:8}}>{sv.emoji}</div>
+              <div style={{fontFamily:F,fontSize:26,color:'white',fontWeight:800}}>{sharedVillain}</div>
+              <div style={{fontFamily:F,fontSize:13,color:sv.color+'cc',marginTop:5}}>{sv.tagline}</div>
+              <span style={{display:'inline-block',borderRadius:99,padding:'3px 12px',fontSize:11,fontFamily:F,background:TAG_COLOR[sv.tag]?.bg,color:TAG_COLOR[sv.tag]?.label,border:'1px solid '+TAG_COLOR[sv.tag]?.border,marginTop:10,fontWeight:600}}>{sv.tag}</span>
             </div>
           </div>
-
-          <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"13px 15px",marginBottom:14}}>
-            <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13.5,color:"rgba(255,255,255,0.8)",lineHeight:1.78}}>{v.desc}</p>
+          <div style={{background:'rgba(255,255,255,0.05)',borderRadius:12,padding:'13px 15px',marginBottom:14}}>
+            <p style={{fontFamily:F,fontSize:13.5,color:'rgba(255,255,255,0.8)',lineHeight:1.78}}>{sv.desc}</p>
           </div>
-
-          {compat&&(
-            <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:14,padding:"14px 16px",marginBottom:14}}>
-              <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11,color:"rgba(16,185,129,0.85)",letterSpacing:"0.09em",textTransform:"uppercase",marginBottom:10}}>💞 유형별 궁합</div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(46,213,115,0.08)",border:"1px solid rgba(46,213,115,0.25)",borderRadius:10,padding:"10px 12px"}}>
+          {sc&&(
+            <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:14,padding:'14px 16px',marginBottom:14}}>
+              <div style={{fontFamily:F,fontSize:11,color:'rgba(16,185,129,0.85)',letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:10}}>💞 유형별 궁합</div>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                <div style={{display:'flex',alignItems:'flex-start',gap:10,background:'rgba(46,213,115,0.08)',border:'1px solid rgba(46,213,115,0.25)',borderRadius:10,padding:'10px 12px'}}>
                   <span style={{fontSize:20,flexShrink:0}}>💚</span>
                   <div>
-                    <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"#2ed573",marginBottom:2}}>{V[compat.best]?.emoji} {compat.best} — 잘 맞아요</div>
-                    <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{compat.bestDesc}</p>
+                    <div style={{fontFamily:F,fontSize:13,color:'#2ed573',marginBottom:2}}>{V[sc.best]?.emoji} {sc.best} — 잘 맞아요</div>
+                    <p style={{fontFamily:F,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.55}}>{sc.bestDesc}</p>
                   </div>
                 </div>
-                <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(255,71,87,0.08)",border:"1px solid rgba(255,71,87,0.25)",borderRadius:10,padding:"10px 12px"}}>
+                <div style={{display:'flex',alignItems:'flex-start',gap:10,background:'rgba(255,71,87,0.08)',border:'1px solid rgba(255,71,87,0.25)',borderRadius:10,padding:'10px 12px'}}>
                   <span style={{fontSize:20,flexShrink:0}}>🔴</span>
                   <div>
-                    <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"#ff4757",marginBottom:2}}>{V[compat.worst]?.emoji} {compat.worst} — 조심해요</div>
-                    <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.55}}>{compat.worstDesc}</p>
+                    <div style={{fontFamily:F,fontSize:13,color:'#ff4757',marginBottom:2}}>{V[sc.worst]?.emoji} {sc.worst} — 조심해요</div>
+                    <p style={{fontFamily:F,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.55}}>{sc.worstDesc}</p>
                   </div>
                 </div>
               </div>
             </div>
           )}
-
-          <div style={{borderTop:"1px solid rgba(255,255,255,0.07)",paddingTop:14,marginBottom:14}}>
-            <div style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:11,color:"rgba(16,185,129,0.85)",letterSpacing:"0.09em",textTransform:"uppercase",marginBottom:10}}>💡 성장 팁</div>
-            {v.tips.map((t,i)=>(
-              <div key={i} style={{background:`linear-gradient(135deg,${v.color}18,transparent)`,border:`1px solid ${v.color}30`,borderRadius:12,padding:"12px 14px",marginBottom:9}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+          <div style={{marginBottom:14}}>
+            <div style={{fontFamily:F,fontSize:11,color:'rgba(16,185,129,0.85)',letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:10}}>💡 성장 팁</div>
+            {sv.tips.map((t,i)=>(
+              <div key={i} style={{background:sv.color+'18',border:'1px solid '+sv.color+'30',borderRadius:12,padding:'12px 14px',marginBottom:9}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
                   <span style={{fontSize:15}}>{t.icon}</span>
-                  <span style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"white",fontWeight:700}}>{t.title}</span>
+                  <span style={{fontFamily:F,fontSize:13,color:'white',fontWeight:700}}>{t.title}</span>
                 </div>
-                <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12.5,color:"rgba(255,255,255,0.72)",lineHeight:1.7,whiteSpace:"pre-line"}}>{t.body}</p>
+                <p style={{fontFamily:F,fontSize:12.5,color:'rgba(255,255,255,0.72)',lineHeight:1.7,whiteSpace:'pre-line'}}>{t.body}</p>
               </div>
             ))}
           </div>
-
-          <div style={{textAlign:"center",borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:16}}>
-            <p style={{fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.5)",marginBottom:14}}>나는 어떤 소통빌런일까? 🤔</p>
-            <button onClick={()=>{setStep("profile");window.history.replaceState(null,'',window.location.pathname);}}
-              style={{width:"100%",background:"linear-gradient(135deg,#10B981 0%,#3B82F6 100%)",color:"white",border:"none",borderRadius:13,padding:"15px",fontSize:15,fontWeight:700,fontFamily:"'Pretendard',-apple-system,sans-serif",cursor:"pointer",boxShadow:"0 4px 20px rgba(16,185,129,0.3)"}}>
+          <div style={{textAlign:'center',borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:16}}>
+            <p style={{fontFamily:F,fontSize:13,color:'rgba(255,255,255,0.45)',marginBottom:14}}>나는 어떤 소통빌런일까? 🤔</p>
+            <button onClick={()=>{setStep('profile');window.history.replaceState(null,'',window.location.pathname);}}
+              style={{width:'100%',background:'linear-gradient(135deg,#10B981 0%,#3B82F6 100%)',color:'white',border:'none',borderRadius:13,padding:15,fontSize:15,fontWeight:700,fontFamily:F,cursor:'pointer',boxShadow:'0 4px 20px rgba(16,185,129,0.3)'}}>
               🦹 나도 테스트 해보기
             </button>
           </div>
@@ -989,7 +972,6 @@ function App() {
       </Wrap>
     );
   }
-
   return null;
 }
 
@@ -1081,4 +1063,9 @@ input:focus,select:focus{border-color:rgba(59,130,246,0.7)!important;outline:non
 input::placeholder{color:rgba(255,255,255,0.22);}
 select option{background:#1a1730;color:white;}
 `;
-const root=ReactDOM.createRoot(document.getElementById("root"));root.render(<App />);</script></body></html>
+
+const root=ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
