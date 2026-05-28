@@ -437,20 +437,23 @@ function App() {
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(80, 460); ctx.lineTo(W-80, 460); ctx.stroke();
 
-      // 설명
+      // 설명 (동적 y)
       ctx.font = "24px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.75)";
       ctx.textAlign = "center";
       const descLines = wrapText(ctx, vData.desc, W - 160, 24);
-      descLines.slice(0,4).forEach((line, i) => {
-        ctx.fillText(line, W/2, 500 + i * 38);
+      let descY = 500;
+      descLines.slice(0,4).forEach((line) => {
+        ctx.fillText(line, W/2, descY); descY += 38;
       });
 
-      // 구분선2
-      ctx.beginPath(); ctx.moveTo(80, 680); ctx.lineTo(W-80, 680); ctx.stroke();
+      // 구분선2 (설명 바로 아래)
+      descY += 20;
+      ctx.beginPath(); ctx.moveTo(80, descY); ctx.lineTo(W-80, descY); ctx.stroke();
+      descY += 40;
 
       // 💡 성장 팁
-      let cy = 720;
+      let cy = descY;
       ctx.font = "bold 26px sans-serif";
       ctx.fillStyle = "rgba(16,185,129,0.95)";
       ctx.textAlign = "center";
