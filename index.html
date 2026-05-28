@@ -16,6 +16,10 @@
 <body>
 <div id="root"></div>
 <script>
+const _initVillain = (function(){
+  try { var p=new URLSearchParams(window.location.search).get('result'); return p&&window._V&&window._V[p]?p:null; } catch(e){return null;}
+})();
+const _initStep = _initVillain ? 'sharedResult' : 'profile';
 
 window.storage={
   _k:function(k,s){return(s?'sh_':'lc_')+k;},
@@ -239,6 +243,8 @@ const TAG_COLOR = {
 
 const VList = Object.keys(V);
 window._V = V;
+const _initVillain2 = (function(){ try { var p=new URLSearchParams(window.location.search).get('result'); return p&&V[p]?p:null; } catch(e){return null;} })();
+const _initStep2 = _initVillain2 ? 'sharedResult' : 'profile';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 유형별 궁합
@@ -305,12 +311,10 @@ function wrapText(ctx, text, maxW, fontSize) {
   return lines;
 }
 
-// URL로 결과 공유 처리
-
 function App() {
   // steps: profile | quiz | result | browse | detail
-  const [step, setStep] = useState("profile");
-  
+  const [step, setStep] = useState(_initStep2);
+  const [sharedVillain] = useState(_initVillain2);
   const [profile, setProfile] = useState({ dept:"", nickname:"" });
   const [profileErr, setProfileErr] = useState("");
   const [deptMode, setDeptMode] = useState("select"); // "select" | "custom"
@@ -380,7 +384,7 @@ function App() {
     setSaving(true);
     try {
       const vData = V[result.top];
-      const W = 720, H = 1200;
+      const W = 720, H = 960;
       const canvas = document.createElement("canvas");
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext("2d");
@@ -439,93 +443,35 @@ function App() {
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(80, 460); ctx.lineTo(W-80, 460); ctx.stroke();
 
-      // 설명 (동적 y)
+      // 설명
       ctx.font = "24px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.75)";
       ctx.textAlign = "center";
       const descLines = wrapText(ctx, vData.desc, W - 160, 24);
-      let descY = 500;
-      descLines.slice(0,4).forEach((line) => {
-        ctx.fillText(line, W/2, descY); descY += 38;
+      descLines.slice(0,4).forEach((line, i) => {
+        ctx.fillText(line, W/2, 500 + i * 38);
       });
 
-      // 구분선2 (설명 바로 아래)
-      descY += 20;
-      ctx.beginPath(); ctx.moveTo(80, descY); ctx.lineTo(W-80, descY); ctx.stroke();
-      descY += 40;
-
-      // 💡 성장 팁
-      let cy = descY;
-      ctx.font = "bold 26px sans-serif";
-      ctx.fillStyle = "rgba(16,185,129,0.95)";
-      ctx.textAlign = "center";
-      ctx.fillText("💡 성장 팁", W/2, cy); cy += 44;
-
-      vData.tips.forEach((t) => {
-        ctx.font = "bold 22px sans-serif";
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "left";
-        ctx.fillText(t.icon + " " + t.title, 80, cy); cy += 38;
-      });
-
-      ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(80, cy+10); ctx.lineTo(W-80, cy+10); ctx.stroke();
-      cy += 50;
-
-      // 💞 궁합
-      const compat = COMPAT[result.top];
-      if(compat){
-        ctx.font = "bold 26px sans-serif";
-        ctx.fillStyle = "rgba(16,185,129,0.95)";
-        ctx.textAlign = "center";
-        ctx.fillText("💞 유형별 궁합", W/2, cy); cy += 44;
-
-        ctx.fillStyle = "rgba(46,213,115,0.12)";
-        roundRect(ctx, 80, cy, W-160, 80, 12); ctx.fill();
-        ctx.font = "bold 21px sans-serif"; ctx.fillStyle = "#2ed573"; ctx.textAlign = "left";
-        ctx.fillText((V[compat.best]?.emoji||"")+" "+compat.best+" — 잘 맞아요 💚", 104, cy+28);
-        ctx.font = "18px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.6)";
-        ctx.fillText(compat.bestDesc, 104, cy+56); cy += 100;
-
-        ctx.fillStyle = "rgba(255,71,87,0.12)";
-        roundRect(ctx, 80, cy, W-160, 80, 12); ctx.fill();
-        ctx.font = "bold 21px sans-serif"; ctx.fillStyle = "#ff4757"; ctx.textAlign = "left";
-        ctx.fillText((V[compat.worst]?.emoji||"")+" "+compat.worst+" — 조심해요 🔴", 104, cy+28);
-        ctx.font = "18px sans-serif"; ctx.fillStyle = "rgba(255,255,255,0.6)";
-        ctx.fillText(compat.worstDesc, 104, cy+56); cy += 110;
-      }
-
-      ctx.strokeStyle = "rgba(255,255,255,0.1)";
-      ctx.beginPath(); ctx.moveTo(80, cy); ctx.lineTo(W-80, cy); ctx.stroke();
-      cy += 42;
+      // 구분선2
+      ctx.beginPath(); ctx.moveTo(80, 680); ctx.lineTo(W-80, 680); ctx.stroke();
 
       // 닉네임
       ctx.font = "bold 26px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.55)";
       ctx.textAlign = "center";
       const nameLabel = (profile.dept ? profile.dept + " · " : "") + (profile.nickname || "익명");
-      ctx.fillText(nameLabel, W/2, cy); cy += 42;
+      ctx.fillText(nameLabel, W/2, 730);
 
-      // 워터마크
+      // 하단 워터마크
       ctx.font = "22px sans-serif";
-      ctx.fillStyle = "rgba(16,185,129,0.6)";
-      ctx.fillText("소통하는 양양양수 만들기", W/2, cy);
+      ctx.fillStyle = "rgba(167,139,250,0.5)";
+      ctx.fillText("소통하는 양양양수 만들기", W/2, 820);
 
-      // 저장 — iOS 대응
-      const dataUrl = canvas.toDataURL("image/png");
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      if(isIOS){
-        const win = window.open("","_blank");
-        if(win){
-          win.document.write('<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;background:#0B131E;display:flex;flex-direction:column;align-items:center;padding:20px"><img src="'+dataUrl+'" style="max-width:100%;border-radius:16px"/><p style="color:white;text-align:center;padding:16px;font-family:sans-serif;font-size:15px">📸 이미지를 길게 눌러서 저장하세요!</p></body></html>');
-          win.document.close();
-        } else { alert("팝업이 차단됐어요. 팝업 허용 후 다시 시도해 주세요."); }
-      } else {
-        const link = document.createElement("a");
-        link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
-        link.href = dataUrl;
-        link.click();
-      }
+      // 저장
+      const link = document.createElement("a");
+      link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
     } catch(e) {
       alert("이미지 저장 실패. 스크린샷을 이용해 주세요.");
     }
@@ -547,16 +493,8 @@ function App() {
   };
 
   const handleCopyLink = () => {
-    try {
-      navigator.clipboard.writeText(window.location.href);
-      alert("링크가 복사됐어요! 🔗");
-    } catch(e) {
-      const el = document.createElement("textarea");
-      el.value = window.location.href;
-      document.body.appendChild(el); el.select();
-      try { document.execCommand("copy"); alert("링크가 복사됐어요! 🔗"); } catch(e2){}
-      document.body.removeChild(el);
-    }
+    navigator.clipboard.writeText(window.location.href);
+    alert("테스트 링크가 복사되었습니다! 친구들에게 공유해보세요. 🌱");
   };
 
 
@@ -780,10 +718,9 @@ function App() {
                 🔗 링크공유
               </button>
               <a href="https://naver.me/x6JxwVuC" target="_blank" rel="noopener noreferrer"
-                style={{flex:1,background:"linear-gradient(135deg,rgba(16,185,129,0.25),rgba(59,130,246,0.25))",border:"1px solid rgba(59,130,246,0.4)",borderRadius:12,padding:"11px 4px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"white",textAlign:"center",textDecoration:"none",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                style={{flex:1,background:"linear-gradient(135deg,rgba(16,185,129,0.25),rgba(59,130,246,0.25))",border:"1px solid rgba(59,130,246,0.4)",borderRadius:12,padding:"11px 4px",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"white",textAlign:"center",textDecoration:"none",display:"flex",alignItems:"center",justifyContent:"center"}}>
                 📋 소통설문
               </a>
-            </div>
             </div>
 
             {/* 유형별 궁합 */}
@@ -855,7 +792,7 @@ function App() {
 
           <CB style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:14}}>
             <p style={{...S.micro,marginBottom:12}}>빌런을 자각하는 순간, 더 나은 선택을 할 수 있어요 🌱</p>
-            <button className="btn-g" onClick={handleRetry}>↩️ 다시 해보기</button>
+            <button className="btn-g" onClick={handleRetry}>다시 해보기</button>
           </CB>
         </Card>
       </Wrap>
@@ -974,6 +911,71 @@ function App() {
 
   // ── 관리자 패널 ──────────────────────────
 
+  if(step==='sharedResult' && sharedVillain){
+    const sv=V[sharedVillain];
+    const sc=COMPAT[sharedVillain];
+    const F="'Pretendard',-apple-system,sans-serif";
+    return(
+      <Wrap>
+        <Card scroll>
+          <div style={{textAlign:'center',marginBottom:8}}>
+            <span style={{fontFamily:F,fontSize:12,color:'rgba(16,185,129,0.9)',letterSpacing:'0.1em'}}>친구의 소통 유형 결과</span>
+          </div>
+          <div style={{textAlign:'center',marginBottom:16}}>
+            <div style={{background:sv.color+'33',border:'2px solid '+sv.color+'88',borderRadius:20,padding:'18px 30px',display:'inline-block'}}>
+              <div style={{fontSize:52,marginBottom:8}}>{sv.emoji}</div>
+              <div style={{fontFamily:F,fontSize:26,color:'white',fontWeight:800}}>{sharedVillain}</div>
+              <div style={{fontFamily:F,fontSize:13,color:sv.color+'cc',marginTop:5}}>{sv.tagline}</div>
+              <span style={{display:'inline-block',borderRadius:99,padding:'3px 12px',fontSize:11,fontFamily:F,background:TAG_COLOR[sv.tag]?.bg,color:TAG_COLOR[sv.tag]?.label,border:'1px solid '+TAG_COLOR[sv.tag]?.border,marginTop:10,fontWeight:600}}>{sv.tag}</span>
+            </div>
+          </div>
+          <div style={{background:'rgba(255,255,255,0.05)',borderRadius:12,padding:'13px 15px',marginBottom:14}}>
+            <p style={{fontFamily:F,fontSize:13.5,color:'rgba(255,255,255,0.8)',lineHeight:1.78}}>{sv.desc}</p>
+          </div>
+          {sc&&(
+            <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:14,padding:'14px 16px',marginBottom:14}}>
+              <div style={{fontFamily:F,fontSize:11,color:'rgba(16,185,129,0.85)',letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:10}}>💞 유형별 궁합</div>
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                <div style={{display:'flex',alignItems:'flex-start',gap:10,background:'rgba(46,213,115,0.08)',border:'1px solid rgba(46,213,115,0.25)',borderRadius:10,padding:'10px 12px'}}>
+                  <span style={{fontSize:20,flexShrink:0}}>💚</span>
+                  <div>
+                    <div style={{fontFamily:F,fontSize:13,color:'#2ed573',marginBottom:2}}>{V[sc.best]?.emoji} {sc.best} — 잘 맞아요</div>
+                    <p style={{fontFamily:F,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.55}}>{sc.bestDesc}</p>
+                  </div>
+                </div>
+                <div style={{display:'flex',alignItems:'flex-start',gap:10,background:'rgba(255,71,87,0.08)',border:'1px solid rgba(255,71,87,0.25)',borderRadius:10,padding:'10px 12px'}}>
+                  <span style={{fontSize:20,flexShrink:0}}>🔴</span>
+                  <div>
+                    <div style={{fontFamily:F,fontSize:13,color:'#ff4757',marginBottom:2}}>{V[sc.worst]?.emoji} {sc.worst} — 조심해요</div>
+                    <p style={{fontFamily:F,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.55}}>{sc.worstDesc}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div style={{marginBottom:14}}>
+            <div style={{fontFamily:F,fontSize:11,color:'rgba(16,185,129,0.85)',letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:10}}>💡 성장 팁</div>
+            {sv.tips.map((t,i)=>(
+              <div key={i} style={{background:sv.color+'18',border:'1px solid '+sv.color+'30',borderRadius:12,padding:'12px 14px',marginBottom:9}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
+                  <span style={{fontSize:15}}>{t.icon}</span>
+                  <span style={{fontFamily:F,fontSize:13,color:'white',fontWeight:700}}>{t.title}</span>
+                </div>
+                <p style={{fontFamily:F,fontSize:12.5,color:'rgba(255,255,255,0.72)',lineHeight:1.7,whiteSpace:'pre-line'}}>{t.body}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{textAlign:'center',borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:16}}>
+            <p style={{fontFamily:F,fontSize:13,color:'rgba(255,255,255,0.45)',marginBottom:14}}>나는 어떤 소통빌런일까? 🤔</p>
+            <button onClick={()=>{setStep('profile');window.history.replaceState(null,'',window.location.pathname);}}
+              style={{width:'100%',background:'linear-gradient(135deg,#10B981 0%,#3B82F6 100%)',color:'white',border:'none',borderRadius:13,padding:15,fontSize:15,fontWeight:700,fontFamily:F,cursor:'pointer',boxShadow:'0 4px 20px rgba(16,185,129,0.3)'}}>
+              🦹 나도 테스트 해보기
+            </button>
+          </div>
+        </Card>
+      </Wrap>
+    );
+  }
   return null;
 }
 
