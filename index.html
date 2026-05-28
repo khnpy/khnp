@@ -238,7 +238,6 @@ const TAG_COLOR = {
 };
 
 const VList = Object.keys(V);
-const _sv=(function(){try{var p=new URLSearchParams(location.search).get('result');return(p&&V[p])?p:null;}catch(e){return null;}})();
 window._V = V;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -310,7 +309,7 @@ function wrapText(ctx, text, maxW, fontSize) {
 
 function App() {
   // steps: profile | quiz | result | browse | detail
-  const [step, setStep] = useState(_sv ? "sharedResult" : "profile");
+  const [step, setStep] = useState("profile");
   
   const [profile, setProfile] = useState({ dept:"", nickname:"" });
   const [profileErr, setProfileErr] = useState("");
@@ -368,7 +367,6 @@ function App() {
       setSelected(null); setAnimating(false);
       if(currentQ+1>=questions.length){
         const r=getResult(ns); setResult(r); setScores(ns); setStep('result');
-        try{window.history.replaceState(null,'',location.pathname+'?result='+encodeURIComponent(r.top));}catch(e){}
         try{window.history.replaceState(null,'',window.location.pathname+'?result='+encodeURIComponent(r.top));}catch(e){}
         saveRecord(profile.dept, profile.nickname, r.top);
         sendToGoogleSheet(profile.dept, profile.nickname, r.top, V[r.top].tag);
@@ -551,12 +549,12 @@ function App() {
   const handleCopyLink = () => {
     try {
       navigator.clipboard.writeText(window.location.href);
-      alert("결과 링크가 복사됐어요! 공유해보세요 🌱");
+      alert("링크가 복사됐어요! 🔗");
     } catch(e) {
       const el = document.createElement("textarea");
       el.value = window.location.href;
       document.body.appendChild(el); el.select();
-      try { document.execCommand("copy"); alert("결과 링크가 복사됐어요! 공유해보세요 🌱"); } catch(e2){}
+      try { document.execCommand("copy"); alert("링크가 복사됐어요! 🔗"); } catch(e2){}
       document.body.removeChild(el);
     }
   };
@@ -772,15 +770,20 @@ function App() {
             <div style={S.descBox}><p style={S.descTxt}>{v.desc}</p></div>
 
             {/* 저장/공유 버튼 — 설명 바로 아래 */}
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
+            <div style={{display:"flex",gap:7,marginBottom:16}}>
               <button onClick={handleSaveImage} disabled={saving}
-                style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,padding:"12px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"rgba(255,255,255,0.85)",transition:"all .2s"}}>
-                {saving?"저장 중…":"📸 이미지 저장"}
+                style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,padding:"11px 4px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.85)",textAlign:"center"}}>
+                {saving?"저장중…":"📸 이미지저장"}
               </button>
               <button onClick={handleCopyLink}
-                style={{flex:1,background:"linear-gradient(135deg,rgba(16,185,129,0.2) 0%,rgba(59,130,246,0.2) 100%)",border:"1px solid rgba(59,130,246,0.4)",borderRadius:12,padding:"12px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:13,color:"white",transition:"all .2s"}}>
-                🔗 링크 복사
+                style={{flex:1,background:"rgba(255,255,255,0.07)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:12,padding:"11px 4px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"rgba(255,255,255,0.85)",textAlign:"center"}}>
+                🔗 링크공유
               </button>
+              <a href="https://naver.me/x6JxwVuC" target="_blank" rel="noopener noreferrer"
+                style={{flex:1,background:"linear-gradient(135deg,rgba(16,185,129,0.25),rgba(59,130,246,0.25))",border:"1px solid rgba(59,130,246,0.4)",borderRadius:12,padding:"11px 4px",cursor:"pointer",fontFamily:"'Pretendard',-apple-system,sans-serif",fontSize:12,color:"white",textAlign:"center",textDecoration:"none",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                📋 소통설문
+              </a>
+            </div>
             </div>
 
             {/* 유형별 궁합 */}
@@ -852,10 +855,7 @@ function App() {
 
           <CB style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:14}}>
             <p style={{...S.micro,marginBottom:12}}>빌런을 자각하는 순간, 더 나은 선택을 할 수 있어요 🌱</p>
-            <button className="btn-g" onClick={handleRetry} style={{width:"100%"}}>↩️ 다시 해보기</button>
-            <a href="https://naver.me/x6JxwVuC" target="_blank" rel="noopener noreferrer" style={{display:"block",marginTop:10,background:"linear-gradient(135deg,#10B981 0%,#3B82F6 100%)",color:"white",borderRadius:13,padding:"14px",fontFamily:"Pretendard,-apple-system,sans-serif",fontSize:15,fontWeight:700,textAlign:"center",textDecoration:"none",boxShadow:"0 4px 20px rgba(16,185,129,0.3)"}}>
-              📋 상호존중 설문 바로가기
-            </a>
+            <button className="btn-g" onClick={handleRetry}>↩️ 다시 해보기</button>
           </CB>
         </Card>
       </Wrap>
@@ -973,127 +973,6 @@ function App() {
   // ── 관리자 로그인 ────────────────────────
 
   // ── 관리자 패널 ──────────────────────────
-
-  if(step==='sharedResult' && sharedVillain){
-    const sv=V[sharedVillain];
-    const sc=COMPAT[sharedVillain];
-    const F="'Pretendard',-apple-system,sans-serif";
-    return(
-      <Wrap>
-        <Card scroll>
-          <div style={{textAlign:'center',marginBottom:8}}>
-            <span style={{fontFamily:F,fontSize:12,color:'rgba(16,185,129,0.9)',letterSpacing:'0.1em'}}>친구의 소통 유형 결과</span>
-          </div>
-          <div style={{textAlign:'center',marginBottom:16}}>
-            <div style={{background:sv.color+'33',border:'2px solid '+sv.color+'88',borderRadius:20,padding:'18px 30px',display:'inline-block'}}>
-              <div style={{fontSize:52,marginBottom:8}}>{sv.emoji}</div>
-              <div style={{fontFamily:F,fontSize:26,color:'white',fontWeight:800}}>{sharedVillain}</div>
-              <div style={{fontFamily:F,fontSize:13,color:sv.color+'cc',marginTop:5}}>{sv.tagline}</div>
-              <span style={{display:'inline-block',borderRadius:99,padding:'3px 12px',fontSize:11,fontFamily:F,background:TAG_COLOR[sv.tag]?.bg,color:TAG_COLOR[sv.tag]?.label,border:'1px solid '+TAG_COLOR[sv.tag]?.border,marginTop:10,fontWeight:600}}>{sv.tag}</span>
-            </div>
-          </div>
-          <div style={{background:'rgba(255,255,255,0.05)',borderRadius:12,padding:'13px 15px',marginBottom:14}}>
-            <p style={{fontFamily:F,fontSize:13.5,color:'rgba(255,255,255,0.8)',lineHeight:1.78}}>{sv.desc}</p>
-          </div>
-          {sc&&(
-            <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.09)',borderRadius:14,padding:'14px 16px',marginBottom:14}}>
-              <div style={{fontFamily:F,fontSize:11,color:'rgba(16,185,129,0.85)',letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:10}}>💞 유형별 궁합</div>
-              <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                <div style={{display:'flex',alignItems:'flex-start',gap:10,background:'rgba(46,213,115,0.08)',border:'1px solid rgba(46,213,115,0.25)',borderRadius:10,padding:'10px 12px'}}>
-                  <span style={{fontSize:20,flexShrink:0}}>💚</span>
-                  <div>
-                    <div style={{fontFamily:F,fontSize:13,color:'#2ed573',marginBottom:2}}>{V[sc.best]?.emoji} {sc.best} — 잘 맞아요</div>
-                    <p style={{fontFamily:F,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.55}}>{sc.bestDesc}</p>
-                  </div>
-                </div>
-                <div style={{display:'flex',alignItems:'flex-start',gap:10,background:'rgba(255,71,87,0.08)',border:'1px solid rgba(255,71,87,0.25)',borderRadius:10,padding:'10px 12px'}}>
-                  <span style={{fontSize:20,flexShrink:0}}>🔴</span>
-                  <div>
-                    <div style={{fontFamily:F,fontSize:13,color:'#ff4757',marginBottom:2}}>{V[sc.worst]?.emoji} {sc.worst} — 조심해요</div>
-                    <p style={{fontFamily:F,fontSize:12,color:'rgba(255,255,255,0.65)',lineHeight:1.55}}>{sc.worstDesc}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div style={{marginBottom:14}}>
-            <div style={{fontFamily:F,fontSize:11,color:'rgba(16,185,129,0.85)',letterSpacing:'0.09em',textTransform:'uppercase',marginBottom:10}}>💡 성장 팁</div>
-            {sv.tips.map((t,i)=>(
-              <div key={i} style={{background:sv.color+'18',border:'1px solid '+sv.color+'30',borderRadius:12,padding:'12px 14px',marginBottom:9}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:6}}>
-                  <span style={{fontSize:15}}>{t.icon}</span>
-                  <span style={{fontFamily:F,fontSize:13,color:'white',fontWeight:700}}>{t.title}</span>
-                </div>
-                <p style={{fontFamily:F,fontSize:12.5,color:'rgba(255,255,255,0.72)',lineHeight:1.7,whiteSpace:'pre-line'}}>{t.body}</p>
-              </div>
-            ))}
-          </div>
-          <div style={{textAlign:'center',borderTop:'1px solid rgba(255,255,255,0.06)',paddingTop:16}}>
-            <p style={{fontFamily:F,fontSize:13,color:'rgba(255,255,255,0.45)',marginBottom:14}}>나는 어떤 소통빌런일까? 🤔</p>
-            <button onClick={()=>{setStep('profile');window.history.replaceState(null,'',window.location.pathname);}}
-              style={{width:'100%',background:'linear-gradient(135deg,#10B981 0%,#3B82F6 100%)',color:'white',border:'none',borderRadius:13,padding:15,fontSize:15,fontWeight:700,fontFamily:F,cursor:'pointer',boxShadow:'0 4px 20px rgba(16,185,129,0.3)'}}>
-              🦹 나도 테스트 해보기
-            </button>
-          </div>
-        </Card>
-      </Wrap>
-    );
-  }
-
-  if(step==="sharedResult"){
-    const sv = V[_sv];
-    const sc = COMPAT[_sv];
-    const F = "'Pretendard',-apple-system,sans-serif";
-    if(!sv) { setStep("profile"); return null; }
-    return(
-      <Wrap>
-        <Card scroll>
-          <div style={{textAlign:"center",marginBottom:8}}>
-            <span style={{fontFamily:F,fontSize:12,color:"rgba(16,185,129,0.9)",letterSpacing:"0.1em"}}>친구의 소통 유형</span>
-          </div>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <div style={{background:sv.color+"33",border:"2px solid "+sv.color+"88",borderRadius:20,padding:"18px 30px",display:"inline-block"}}>
-              <div style={{fontSize:52,marginBottom:8}}>{sv.emoji}</div>
-              <div style={{fontFamily:F,fontSize:26,color:"white",fontWeight:800}}>{_sv}</div>
-              <div style={{fontFamily:F,fontSize:13,color:sv.color+"cc",marginTop:5}}>{sv.tagline}</div>
-              <span style={{display:"inline-block",borderRadius:99,padding:"3px 12px",fontSize:11,fontFamily:F,background:TAG_COLOR[sv.tag]?.bg,color:TAG_COLOR[sv.tag]?.label,border:"1px solid "+TAG_COLOR[sv.tag]?.border,marginTop:10,fontWeight:600}}>{sv.tag}</span>
-            </div>
-          </div>
-          <div style={{background:"rgba(255,255,255,0.05)",borderRadius:12,padding:"13px 15px",marginBottom:14}}>
-            <p style={{fontFamily:F,fontSize:13.5,color:"rgba(255,255,255,0.8)",lineHeight:1.78}}>{sv.desc}</p>
-          </div>
-          {sc&&(
-            <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.09)",borderRadius:14,padding:"14px 16px",marginBottom:14}}>
-              <div style={{fontFamily:F,fontSize:11,color:"rgba(16,185,129,0.85)",letterSpacing:"0.09em",textTransform:"uppercase",marginBottom:10}}>💞 유형별 궁합</div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(46,213,115,0.08)",border:"1px solid rgba(46,213,115,0.25)",borderRadius:10,padding:"10px 12px"}}>
-                  <span style={{fontSize:18,flexShrink:0}}>💚</span>
-                  <div>
-                    <div style={{fontFamily:F,fontSize:13,color:"#2ed573",marginBottom:2}}>{V[sc.best]?.emoji} {sc.best} — 잘 맞아요</div>
-                    <p style={{fontFamily:F,fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{sc.bestDesc}</p>
-                  </div>
-                </div>
-                <div style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(255,71,87,0.08)",border:"1px solid rgba(255,71,87,0.25)",borderRadius:10,padding:"10px 12px"}}>
-                  <span style={{fontSize:18,flexShrink:0}}>🔴</span>
-                  <div>
-                    <div style={{fontFamily:F,fontSize:13,color:"#ff4757",marginBottom:2}}>{V[sc.worst]?.emoji} {sc.worst} — 조심해요</div>
-                    <p style={{fontFamily:F,fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.5}}>{sc.worstDesc}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div style={{textAlign:"center",borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:16}}>
-            <p style={{fontFamily:F,fontSize:13,color:"rgba(255,255,255,0.45)",marginBottom:14}}>나는 어떤 소통빌런일까? 🤔</p>
-            <button onClick={()=>{ try{window.history.replaceState(null,"",location.pathname);}catch(e){} setStep("profile"); }}
-              style={{width:"100%",background:"linear-gradient(135deg,#10B981 0%,#3B82F6 100%)",color:"white",border:"none",borderRadius:13,padding:15,fontSize:15,fontWeight:700,fontFamily:F,cursor:"pointer",boxShadow:"0 4px 20px rgba(16,185,129,0.3)"}}>
-              🦹 나도 테스트 해보기
-            </button>
-          </div>
-        </Card>
-      </Wrap>
-    );
-  }
 
   return null;
 }
