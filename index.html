@@ -351,7 +351,7 @@ function App() {
     setSaving(true);
     try {
       const vData = V[result.top];
-      const W = 720, H = 960;
+      const W = 720, H = 1100;
       const canvas = document.createElement("canvas");
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext("2d");
@@ -360,7 +360,7 @@ function App() {
       ctx.fillStyle = "#0B131E";
       ctx.fillRect(0, 0, W, H);
 
-      // 보라 그라데이션 상단
+      // 그라데이션
       const grad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H*0.7);
       grad.addColorStop(0, "rgba(16,185,129,0.4)");
       grad.addColorStop(1, "rgba(59,130,246,0)");
@@ -374,71 +374,104 @@ function App() {
 
       // 상단 라벨
       ctx.font = "bold 22px sans-serif";
-      ctx.fillStyle = "rgba(167,139,250,0.85)";
+      ctx.fillStyle = "rgba(16,185,129,0.9)";
       ctx.textAlign = "center";
       ctx.fillText("나도 소통빌런일까?", W/2, 110);
 
       // 이모지
       ctx.font = "96px serif";
-      ctx.textAlign = "center";
-      ctx.fillText(vData.emoji, W/2, 250);
+      ctx.fillText(vData.emoji, W/2, 240);
 
       // 빌런 이름
       ctx.font = "bold 52px sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
-      ctx.fillText(result.top, W/2, 320);
+      ctx.fillText(result.top, W/2, 310);
 
       // 태그라인
       ctx.font = "28px sans-serif";
       ctx.fillStyle = vData.color + "cc";
-      ctx.fillText(vData.tagline, W/2, 370);
+      ctx.fillText(vData.tagline, W/2, 358);
 
       // 태그 배지
       const tc = {"공격형":"rgba(231,76,60,0.35)","회피형":"rgba(39,174,96,0.35)","교란형":"rgba(142,68,173,0.35)","자기중심형":"rgba(41,128,185,0.35)"};
-      const tagW = 160, tagH = 44, tagX = W/2 - tagW/2, tagY = 390;
+      const tagW = 180, tagH = 44, tagX = W/2 - tagW/2, tagY = 378;
       ctx.fillStyle = tc[vData.tag] || "rgba(255,255,255,0.15)";
       roundRect(ctx, tagX, tagY, tagW, tagH, 22);
       ctx.fill();
       ctx.font = "bold 22px sans-serif";
       ctx.fillStyle = "#ffffff";
-      ctx.textAlign = "center";
       ctx.fillText(vData.tag, W/2, tagY + 29);
 
       // 구분선
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
       ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(80, 460); ctx.lineTo(W-80, 460); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(80, 445); ctx.lineTo(W-80, 445); ctx.stroke();
 
-      // 설명
+      // 설명 텍스트
       ctx.font = "24px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.75)";
-      ctx.textAlign = "center";
       const descLines = wrapText(ctx, vData.desc, W - 160, 24);
-      descLines.slice(0,4).forEach((line, i) => {
-        ctx.fillText(line, W/2, 500 + i * 38);
+      descLines.slice(0, 4).forEach((line, i) => {
+        ctx.fillText(line, W/2, 490 + i * 40);
       });
 
       // 구분선2
-      ctx.beginPath(); ctx.moveTo(80, 680); ctx.lineTo(W-80, 680); ctx.stroke();
+      const descBottom = 490 + Math.min(descLines.length, 4) * 40 + 20;
+      ctx.beginPath(); ctx.moveTo(80, descBottom); ctx.lineTo(W-80, descBottom); ctx.stroke();
+
+      // 성장 팁 제목
+      ctx.font = "bold 22px sans-serif";
+      ctx.fillStyle = "rgba(16,185,129,0.9)";
+      ctx.fillText("💡 나의 성장 팁", W/2, descBottom + 44);
+
+      // 팁 3개
+      let tipY = descBottom + 80;
+      vData.tips.forEach((tip, i) => {
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "left";
+        ctx.fillText(`${tip.icon} ${tip.title}`, 80, tipY);
+        const bodyFirst = tip.body.split("
+")[0];
+        ctx.font = "18px sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.6)";
+        const bodyLines = wrapText(ctx, bodyFirst, W - 160, 18);
+        bodyLines.slice(0,1).forEach((line) => {
+          ctx.fillText(line, 80, tipY + 26);
+        });
+        tipY += 70;
+      });
+
+      // 구분선3
+      ctx.textAlign = "center";
+      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.beginPath(); ctx.moveTo(80, H-130); ctx.lineTo(W-80, H-130); ctx.stroke();
 
       // 닉네임
       ctx.font = "bold 26px sans-serif";
       ctx.fillStyle = "rgba(255,255,255,0.55)";
-      ctx.textAlign = "center";
       const nameLabel = (profile.dept ? profile.dept + " · " : "") + (profile.nickname || "익명");
-      ctx.fillText(nameLabel, W/2, 730);
+      ctx.fillText(nameLabel, W/2, H-90);
 
       // 하단 워터마크
       ctx.font = "22px sans-serif";
-      ctx.fillStyle = "rgba(167,139,250,0.5)";
-      ctx.fillText("소통하는 양양양수 만들기", W/2, 820);
+      ctx.fillStyle = "rgba(16,185,129,0.6)";
+      ctx.fillText("소통하는 양양양수 만들기", W/2, H-52);
 
-      // 저장
-      const link = document.createElement("a");
-      link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
+      // 저장 — iOS 대응
+      const dataUrl = canvas.toDataURL("image/png");
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        // iOS: 새 탭으로 열어서 길게 눌러 저장
+        const win = window.open();
+        win.document.write('<html><body style="margin:0;background:#000"><img src="' + dataUrl + '" style="max-width:100%;display:block"/><p style="color:white;text-align:center;padding:16px;font-family:sans-serif">이미지를 길게 눌러 저장하세요 📸</p></body></html>');
+        win.document.close();
+      } else {
+        const link = document.createElement("a");
+        link.download = "소통빌런_" + result.top + "_" + (profile.nickname||"결과") + ".png";
+        link.href = dataUrl;
+        link.click();
+      }
     } catch(e) {
       alert("이미지 저장 실패. 스크린샷을 이용해 주세요.");
     }
